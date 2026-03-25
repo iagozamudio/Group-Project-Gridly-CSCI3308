@@ -1,0 +1,12 @@
+.divider-waves {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 20px 0;
+}
+
+.wave-line {
+    width: 200px;
+    border-top: 2px dashed #ccc;
+}
