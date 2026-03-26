@@ -1,0 +1,114 @@
+/* ── Base ── */
+body {
+    background-color: #2e2e2e;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* ── Logo outline ── */
+.logo-wrapper {
+    border-radius: 8px;
+    padding: 10px 24px;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.logo-wrapper img {
+    display: block;
+    max-width: 400px;
+}
+
+/* ── Card ── */
+.card {
+    background-color: #3a3a3a;
+    border: 2px solid #fff !important;
+    border-radius: 8px;
+}
+
+/* ── Inputs & Select ── */
+.form-control,
+.form-select {
+    background-color: #3a3a3a;
+    border: 1px solid #aaa;
+    color: #e0e0e0;
+    border-radius: 4px;
+}
+
+.form-control::placeholder {
+    color: #888;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #3a3a3a;
+    border-color: #fff;
+    color: #e0e0e0;
+    box-shadow: none;
+}
+
+.form-select option {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+}
+
+/* ── Labels ── */
+.form-label {
+    color: #ccc;
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+/* ── Sign Up button (blue outline) ── */
+.btn-primary {
+    background-color: transparent;
+    border: 2px solid #4a90d9;
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    padding: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #4a90d9;
+    color: #fff;
+}
+
+/* ── Log In button (green outline) ── */
+.btn-success {
+    background-color: transparent;
+    border: 2px solid #6abf69;
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    padding: 10px;
+}
+
+.btn-success:hover {
+    background-color: #6abf69;
+    color: #fff;
+}
+
+/* ── Divider ── */
+.divider-waves {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    margin: 20px 0;
+}
+
+.wave-line {
+    flex: 1;
+    border-top: 2px dashed #666;
+}
+
+.divider-waves span {
+    color: #aaa;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* ── Footer slogan ── */
+footer p {
+    color: #888;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+}
