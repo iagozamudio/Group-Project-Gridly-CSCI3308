@@ -1,0 +1,157 @@
+<!--Gen Ai was used to help polish, outline, and refine any of the mistake that were made in this process. Refer to the Gen_Ai.txt for more info-->
+<!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Bootstrap demo</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+      </head>
+        <!--Nav Bar-->
+        <body class="bg-dark text-white">
+
+            <!--Nav Bar-->
+            <nav class="navbar navbar-expand-lg navbar-dark bg-black">
+              <div class="container-fluid">
+                <a class="navbar-brand text-white" href="#">Gridly</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                  <div class="navbar-nav">
+                    <a class="nav-link active text-white" href="../pages/home.html">Home</a>
+                    <a class="nav-link text-white" href="../pages/leaderboard.html">LeaderBoard</a>
+                  </div>
+
+                  <div class ="ms-auto"> 
+                    <button class = "btn btn-outline-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#settingsSidebar">
+                        <i class = "bi bi-gear"></i>
+                </div>
+
+              </div>
+            </nav>
+
+        <!--Gen AI was used to help me create the slide bar for the settings-->
+        <!--Settings Sidebar-->
+        <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="settingsSidebar">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Settings</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+          </div>
+          <div class="offcanvas-body">
+            <div class="list-group">
+                <a href = "../pages/Profile.html" class="list-group-item bg-dark text-white border-secondary nav-link">Profile</li>
+                <a href = "../pages/Profile.html" class="list-group-item bg-dark text-white border-secondary">Account</li>  
+            </div>
+          </div>
+         </div>
+
+       <!-- MAIN CONTENT -->
+<div class="container-fluid">
+
+    <!-- PROFILE BANNER -->
+    <div class="position-relative">
+  
+      <!-- Background Image -->
+      <div style="
+        background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
+                    url('https://media.istockphoto.com/id/118393737/photo/crossword-background.jpg?s=1024x1024&w=is&k=20&c=OJZeiB_abADBcf7WEOX-OuMlzGe4pdC4SFAP79e-95s=');
+        height: 200px;
+        background-size: cover;
+        background-position: center;
+      ">
+      </div>
+  
+      <!-- PROFILE ROW (PIC + INFO TOGETHER) -->
+      <div class="position-absolute d-flex align-items-end"
+           style="bottom:-60px; left:30px; height:225px; ">
+  
+        <!-- Profile Picture -->
+        <img src="https://cdn.pixabay.com/photo/2017/06/13/12/54/profile-2398783_1280.png"
+             class="rounded-circle border border-light"
+             style="width:225px; height:225px; object-fit: cover;">
+  
+        <!-- User Info (RIGHT SIDE) -->
+      <!-- User Info (RIGHT SIDE) -->
+      <div class="ms-4">
+
+        <h2 class="mb-1 fs-1">Username</h2>
+
+        <div class="d-flex gap-5">
+          <div>
+            <h5 class = "fs-3">#</h5>
+            <p class="text-secondary fs-3 mb-0">Points Earned</p>
+          </div>
+
+          <div>
+            <h5 class = "fs-3">#</h5>
+            <p class="text-secondary fs-3 mb-0">Player Ranking</p>
+          </div>
+        </div>
+
+      </div>
+
+  
+      </div>
+  
+    </div>
+  
+    <!-- Spacer so content below doesn't overlap -->
+    <div style="height:120px;"></div>
+  
+    <!--Additonal Lower Dashboard Content will go here-->
+    <div class = "row p-3 mt-3">
+
+        <!--Game History-->
+        <div class="col md-4 boarder-end border-secondary"> 
+            <h5 class = "fs-3"> Game History</h5>
+            <div class="border boarder-secondary rounded p-3 mt-2" style="height:300px;"> </div>
+        </div>
+        <!--Stats-->
+        <div class="col md-4 boarder-end border-secondary"> 
+            <h5 class = "fs-3">Stats</h5>
+            <div class="border boarder-secondary rounded p-3 mt-2" style="height:300px;"> </div>
+        </div>
+        <!--Stats-->
+        <div class="col md-4"> 
+            <h5 class = "fs-3">Freinds List</h5>
+            <div class="border boarder-secondary rounded p-3 mt-2" style="height:300px;"> </div>
+        </div>
+
+    </div>
+
+  </div>
+
+   <!---Footer-->
+   <footer class="bg-black text-white mt-5">
+    <div class="container py-4">
+      <div class="row">
+  
+        <!-- Column 1: Social Media -->
+        <div class="col-md-1">
+          <h5 class = "text-center">Connect</h5>
+          <ul class="list-unstyled">
+            <li>
+              <a href="#" class="text-white me-4">
+                <i class="fab fa-linkedin fa-2x"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+  
+      <!-- Bottom row -->
+      <div class="text-center pt-3 border-top border-secondary">
+        <small>© 2026 Gridly | CU Boulder </small>
+      </div>
+    </div>
+  </footer>
+
+        <!-- Bootstrap JS -->
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+      </body>
+    </html>
+ 
