@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS security_questions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    question_text TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (
