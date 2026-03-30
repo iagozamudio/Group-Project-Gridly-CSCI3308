@@ -1,0 +1,283 @@
+body {
+    background-color: #2e2e2e;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+}
+
+.logo-wrapper {
+    padding: 10px 24px;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.logo-wrapper img {
+    display: block;
+    max-width: 400px;
+    height: auto;
+}
+
+.top-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.container {
+    max-width: 1350px;
+    margin: 0 auto;
+    padding: 20px 40px 40px;
+}
+
+.page-shell {
+    display: grid;
+    grid-template-columns: 700px 430px;
+    gap: 60px;
+    justify-content: center;
+    align-items: start;
+}
+
+.left-panel {
+    width: 700px;
+}
+
+.board-section {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 18px;
+    align-items: start;
+}
+
+.tool-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 20px;
+    position: relative;
+}
+
+.tool-group {
+    position: relative;
+}
+
+.tool-btn {
+    width: 44px;
+    height: 44px;
+    background-color: #3a3a3a;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.tool-btn:hover {
+    background-color: #4a4a4a;
+}
+
+.check-menu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 58px;
+    background-color: #3a3a3a;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    padding: 8px 0;
+    min-width: 170px;
+    z-index: 10;
+}
+
+.check-menu.show {
+    display: block;
+}
+
+.check-menu button {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    text-align: left;
+    padding: 10px 14px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.check-menu button:hover {
+    background-color: #4a4a4a;
+}
+
+
+.board-wrap {
+    width: 454px;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(5, 90px);
+    grid-template-rows: repeat(5, 90px);
+    border: 2px solid #000;
+}
+
+.cell {
+    background-color: #e0e0e0;
+    border: 2px solid #000;
+    position: relative;
+}
+
+.cell.black {
+    background-color: #000;
+}
+
+.number {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-size: 0.95rem;
+    color: #000;
+}
+
+
+.time-row {
+    width: auto;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.time-row span {
+    display: inline-block;
+    min-width: 180px;
+    font-size: 3rem;
+    color: #e0e0e0;
+    border-bottom: 3px solid #fff;
+    padding: 0 3px 0px;
+}
+
+
+.clues-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 26px;
+}
+
+.clue-column h3 {
+    margin: 0 0 10px 0;
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #666;
+}
+
+.clue-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.clue-column li {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+    line-height: 1.3;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    padding: 5px 6px;
+}
+
+.clue-number {
+    font-weight: 700;
+}
+
+.active-clue-item {
+    background-color: #00d9ff;
+    color: #111;
+}
+
+
+@media (max-width: 1200px) {
+    .page-shell {
+        grid-template-columns: 1fr;
+        gap: 36px;
+    }
+
+    .left-panel {
+        width: 700px;
+        margin: 0 auto;
+    }
+
+    .clues-panel {
+        width: 700px;
+        margin: 0 auto;
+        padding-top: 0;
+    }
+}
+
+@media (max-width: 760px) {
+    .container {
+        padding: 20px 16px 32px;
+    }
+
+    .left-panel,
+    .clues-panel {
+        width: 100%;
+    }
+
+    .board-section {
+        grid-template-columns: 1fr;
+    }
+
+    .tool-buttons {
+        flex-direction: row;
+        padding-top: 0;
+        justify-content: center;
+    }
+
+    .check-menu {
+        top: 56px;
+        left: 0;
+    }
+
+    .board-wrap,
+    .time-row {
+        width: 100%;
+    }
+
+    .board {
+        grid-template-columns: repeat(5, 60px);
+        grid-template-rows: repeat(5, 60px);
+        justify-content: center;
+    }
+
+    .number {
+        font-size: 0.8rem;
+        top: 4px;
+        left: 4px;
+    }
+
+    .clues-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .time-row span {
+        font-size: 1.6rem;
+    }
+}
+
+.left-panel {
+    width: 700px;
+    margin-left: 180px;   
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 180px;
+    height: 100vh;
+    background-color: #1f1f1f;
+}
