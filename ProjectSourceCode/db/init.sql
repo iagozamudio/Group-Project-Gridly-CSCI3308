@@ -1,16 +1,17 @@
 CREATE TABLE IF NOT EXISTS security_questions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     security_question_id INTEGER,
     security_answer TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (security_question_id) 
-        REFERENCES security_questions (id) 
-        ON DELETE SET NULL
+    CONSTRAINT fk_security_question
+      FOREIGN KEY(security_question_id) 
+      REFERENCES security_questions(id)
+      ON DELETE SET NULL
 );
