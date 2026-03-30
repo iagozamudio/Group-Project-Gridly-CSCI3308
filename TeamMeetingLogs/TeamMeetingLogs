@@ -19,6 +19,30 @@ Meeting with Kelechi - Monday 12:15-12:30 pm
 --> REFER TO THE DEVELOPMENT METHODOLOGY FOR THE TASKS AVAILABLE 
 Tasks taken so far: 
 
+(Week 2 - Iago Zamudio Troncoso) 
+Date: 3/30/26
+Week 2 meeting details & log: 
+
+Meeting with Kelechi - Monday 12:45-1:00 pm 
+--> Checked in about the roles for this week 2. 
+--> Rescheduled the weekly TA meeting
+--> Showed work on all the pages for week 1. 
+--> Gave tips around communication and group meetings.
+--> Discussed the goal of game functionallity and timeline for each aspect. 
+
+2st group meeting was right before the meeting with Kelechi (12:10 - 12:45): 
+--> Met on zoom and in-person. (Xandar and Iago were in-person)
+--> Created new user issues to divide work for week 2. 
+--> Discussed unfinished work and rabit-holes. (unfinished password reset page but added necessary node and docker-files.)
+--> Main objective: functional single player crossword game
+--> divide work: dabase for crosswords, leaderboard, leaderboard rendering with high scores, game checking logic, finishing the home/lobby page, universal side-bar, score saving functions, finishing databases for forgot 
+--> expectaiton: ambitious to do everything, but we want to frontload the work. If we still have work monday, that's ok. 
+--> One group of three will work on the functionallity for the game aspect. (Tommy, Xander, Juan)
+--> One person will work to finish the home page. (James)
+--> One person will create a sidebar for all pages to connect to each other. (Samra)
+--> One person will finish the authentication process, including meaningful security questions, sql databases, and interaction between login/registration/password-reset. (Iago)
+--> REFER TO THE GITHUB ISSUES BOARD FOR TASKS 
+
 
 
 
