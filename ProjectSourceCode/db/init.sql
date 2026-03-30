@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     security_question_id INTEGER,
     security_answer TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_security_question
       FOREIGN KEY(security_question_id) 
