@@ -68,7 +68,6 @@ const crosswordClues = [
   { clue: "Small child", answer: "TOT" },
   { clue: "Friend", answer: "PAL" },
   { clue: "Enemy", answer: "FOE" },
-  { clue: "Large snake", answer: "ANACONDA" },
   { clue: "Hawaiian hello", answer: "ALOHA" },
   { clue: "Part of the eye", answer: "IRIS" },
   { clue: "Slightly wet", answer: "DAMP" },
@@ -79,7 +78,6 @@ const crosswordClues = [
   { clue: "Writing tool", answer: "PEN" },
   { clue: "Not fast", answer: "SLOW" },
   { clue: "Shiny metal", answer: "TIN" },
-  { clue: "Opposite of left", answer: "RIGHT" },
   { clue: "Baby bed", answer: "CRIB" },
   { clue: "Make amends", answer: "ATONE" },
   { clue: "Sound of hesitation", answer: "UM" },
@@ -103,7 +101,7 @@ function shuffle(array) {
 const words = shuffle(
     crosswordClues
     .map(c => c.answer.toUpperCase())
-    .filter(w => w.length <= SIZE) // only words that fit
+    .filter(w => w.length >= 2 && w.length <= SIZE)
 );
 
 // Place the first word in the middle of the grid
@@ -118,38 +116,57 @@ function placeFirstWord(word) {
 
 // Check if a word can be placed at a position in a given direction
 function canPlace(word, row, col, dir) {
+    // Bounds check for the whole word up front
+    if (dir === "across") {
+        if (row < 0 || row >= SIZE || col < 0 || col + word.length > SIZE) return false;
+    } else {
+        if (col < 0 || col >= SIZE || row < 0 || row + word.length > SIZE) return false;
+    }
+
+    // No letter immediately before or after the word
+    if (dir === "across") {
+        if (col > 0 && grid[row][col - 1] !== "") return false;
+        if (col + word.length < SIZE && grid[row][col + word.length] !== "") return false;
+    } else {
+        if (row > 0 && grid[row - 1][col] !== "") return false;
+        if (row + word.length < SIZE && grid[row + word.length][col] !== "") return false;
+    }
+
+    let intersects = false;
+
     for (let i = 0; i < word.length; i++) {
-        let r = dir === "across" ? row : row + i;
-        let c = dir === "across" ? col + i : col;
+        const r = dir === "across" ? row : row + i;
+        const c = dir === "across" ? col + i : col;
 
-        // Bounds check
-        if (r < 0 || c < 0 || r >= SIZE || c >= SIZE) return false;
-
-        // Check clash with existing letters
-        if (grid[r][c] !== "" && grid[r][c] !== word[i]) return false;
-
-        // Prevent letters touching incorrectly
-        if (dir === "across") {
-            if ((c > 0 && grid[r][c-1] !== "" && i === 0) || (c < SIZE-1 && grid[r][c+1] !== "" && i === word.length-1)) return false;
-            if (r > 0 && grid[r-1][c] !== "") return false;
-            if (r < SIZE-1 && grid[r+1][c] !== "") return false;
+        if (grid[r][c] !== "") {
+            // Existing letter must match
+            if (grid[r][c] !== word[i]) return false;
+            intersects = true;
         } else {
-            if ((r > 0 && grid[r-1][c] !== "" && i === 0) || (r < SIZE-1 && grid[r+1][c] !== "" && i === word.length-1)) return false;
-            if (c > 0 && grid[r][c-1] !== "") return false;
-            if (c < SIZE-1 && grid[r][c+1] !== "") return false;
+            // Empty cell: only check perpendicular neighbors
+            // (prevents parallel words from running side-by-side)
+            if (dir === "across") {
+                if (r > 0 && grid[r - 1][c] !== "") return false;
+                if (r < SIZE - 1 && grid[r + 1][c] !== "") return false;
+            } else {
+                if (c > 0 && grid[r][c - 1] !== "") return false;
+                if (c < SIZE - 1 && grid[r][c + 1] !== "") return false;
+            }
         }
     }
-    return true;
+
+    // Word must cross at least one existing letter to connect to the grid
+    return intersects;
 }
 
 // Place a word on the grid if possible
 function placeWord(word) {
-    // Try to place over existing letters first
+    // Scan grid for Matching letters
     for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
             for (let i = 0; i < word.length; i++) {
                 if (grid[r][c] === word[i]) {
-                    // Try vertical placement
+                    // Vertical Placement
                     let startRow = r - i;
                     if (canPlace(word, startRow, c, "down")) {
                         for (let j = 0; j < word.length; j++) {
@@ -158,7 +175,7 @@ function placeWord(word) {
                         return true;
                     }
 
-                    // Try horizontal placement
+                    // Horizontal placement
                     let startCol = c - i;
                     if (canPlace(word, r, startCol, "across")) {
                         for (let j = 0; j < word.length; j++) {
@@ -171,34 +188,41 @@ function placeWord(word) {
         }
     }
 
-    // Fallback: try to place anywhere horizontal/vertical
+    // If cant place wors
+    return false;
+}
+
+// Keep trying until at least 5 words are placed
+function buildGrid() {
+    // Reset grid
     for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
-            if (canPlace(word, r, c, "across")) {
-                for (let j = 0; j < word.length; j++) {
-                    grid[r][c + j] = word[j];
-                }
-                return true;
-            }
-            if (canPlace(word, r, c, "down")) {
-                for (let j = 0; j < word.length; j++) {
-                    grid[r + j][c] = word[j];
-                }
-                return true;
-            }
+            grid[r][c] = "";
         }
     }
 
-    return false; // Could not place word
+    // Reshuffle
+    shuffle(words);
+
+    let placed = 1;
+
+    // Place first word
+    placeFirstWord(words[0]);
+
+    // Place the rest of the words
+    for (let i = 1; i < words.length; i++) {
+        if (placeWord(words[i])) placed++;
+    }
+
+    return placed;
 }
 
-// Place first word in the middle
-placeFirstWord(words[0]);
-
-// Place the rest of the words
-for (let i = 1; i < words.length; i++) {
-    placeWord(words[i]);
+// Retry until at least 5 words
+let attempts = 0;
+while (buildGrid() < 5) {
+    attempts++;
 }
 
-// Print the grid to console with dots for empty cells
+// Print the grid
+console.log(`(Took ${attempts + 1} attempt(s))`);
 console.log(grid.map(row => row.map(c => c === "" ? "." : c).join(" ")).join("\n"));
