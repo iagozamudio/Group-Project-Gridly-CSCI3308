@@ -90,11 +90,21 @@ const crosswordClues = [
 const SIZE = 5;
 const grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(""));
 
-// Filter words that fit in 5x5 and sort longest first
-const words = crosswordClues
+// Shuffle helper function
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Filter words that fit in 5x5 and shuffle them
+const words = shuffle(
+    crosswordClues
     .map(c => c.answer.toUpperCase())
     .filter(w => w.length <= SIZE) // only words that fit
-    .sort((a, b) => b.length - a.length);
+);
 
 // Place the first word in the middle of the grid
 function placeFirstWord(word) {
@@ -134,6 +144,7 @@ function canPlace(word, row, col, dir) {
 
 // Place a word on the grid if possible
 function placeWord(word) {
+    // Try to place over existing letters first
     for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
             for (let i = 0; i < word.length; i++) {
@@ -180,10 +191,6 @@ function placeWord(word) {
 
     return false; // Could not place word
 }
-
-// =====================
-// TEST CODE
-// =====================
 
 // Place first word in the middle
 placeFirstWord(words[0]);
