@@ -6,25 +6,41 @@
   <title>Crossword Game</title>
   <link rel="stylesheet" href="../css/SinglePlayer.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="../js/game.js" defer></script>
 </head>
+
 <body>
+    <!-- Sidebar (TO-DO) -->
     <div class="sidebar"></div>
     
     <div class="container">
+
+    <!-- Logo -->
     <div class="top-logo">
       <div class="logo-wrapper">
         <img src="../img/logo.png" alt="Logo" />
       </div>
     </div>
 
+    <!-- Page layout -->
     <div class="page-shell">
+
+      <!-- Left side (board + tools) -->
       <div class="left-panel">
+
+        <!-- Board section -->
         <div class="board-section">
+
+          <!-- Tool buttons -->
           <div class="tool-buttons">
             <div class="tool-group">
+
+              <!-- Check button -->
               <button class="tool-btn check-btn" type="button" id="checkButton">
                 <i class="fa-regular fa-circle-check"></i>
               </button>
+
+              <!-- Check dropdown -->
               <div class="check-menu" id="checkMenu">
                 <button type="button">Check Square</button>
                 <button type="button">Check Word</button>
@@ -32,41 +48,52 @@
               </div>
             </div>
 
+            <!-- Erase button -->
             <button class="tool-btn" type="button">
               <i class="fa-solid fa-eraser"></i>
             </button>
 
+            <!-- Hint button -->
             <button class="tool-btn" type="button">
               <i class="fa-regular fa-lightbulb"></i>
             </button>
           </div>
 
+          <!-- Board + timer -->
           <div class="board-wrap">
+
+            <!-- Crossword grid -->
             <div class="board">
+
+              <!-- Row 1 -->
               <div class="cell"><span class="number">1</span></div>
               <div class="cell"><span class="number">2</span></div>
               <div class="cell"><span class="number">3</span></div>
               <div class="cell"><span class="number">4</span></div>
               <div class="cell black"></div>
 
+              <!-- Row 2 -->
               <div class="cell"><span class="number">5</span></div>
               <div class="cell"></div>
               <div class="cell"></div>
               <div class="cell"></div>
               <div class="cell black"></div>
 
+              <!-- Row 3 -->
               <div class="cell"><span class="number">6</span></div>
               <div class="cell"></div>
               <div class="cell"></div>
               <div class="cell"></div>
               <div class="cell"><span class="number">7</span></div>
 
+              <!-- Row 4 -->
               <div class="cell black"></div>
               <div class="cell"><span class="number">8</span></div>
               <div class="cell"></div>
               <div class="cell"></div>
               <div class="cell"></div>
 
+              <!-- Row 5 -->
               <div class="cell black"></div>
               <div class="cell"><span class="number">9</span></div>
               <div class="cell"></div>
@@ -74,6 +101,7 @@
               <div class="cell"></div>
             </div>
 
+            <!-- Timer -->
             <div class="time-row">
               <span id="timer">00:00:00</span>
             </div>
@@ -81,61 +109,66 @@
         </div>
       </div>
 
+      <!-- Clues section -->
       <div class="clues-panel">
+
+        <!-- Across clues -->
         <div class="clue-column">
           <h3>ACROSS</h3>
           <ul>
-            <li class="active-clue-item"><span class="clue-number">1</span><span>1975 Spielberg film that's considered the first summer blockbuster</span></li>
-            <li><span class="clue-number">5</span><span>"Oh okay, gotcha"</span></li>
-            <li><span class="clue-number">6</span><span>Athlete from New York or San Francisco, in different sports</span></li>
-            <li><span class="clue-number">8</span><span>Declare publicly</span></li>
-            <li><span class="clue-number">9</span><span>Emperor who didn't actually fiddle while Rome burned</span></li>
+            <li class="active-clue-item">
+              <span class="clue-number">1</span>
+              <span>1975 Spielberg film that's considered the first summer blockbuster</span>
+            </li>
+            <li>
+              <span class="clue-number">5</span>
+              <span>"Oh okay, gotcha"</span>
+            </li>
+            <li>
+              <span class="clue-number">6</span>
+              <span>Athlete from New York or San Francisco, in different sports</span>
+            </li>
+            <li>
+              <span class="clue-number">8</span>
+              <span>Declare publicly</span>
+            </li>
+            <li>
+              <span class="clue-number">9</span>
+              <span>Emperor who didn't actually fiddle while Rome burned</span>
+            </li>
           </ul>
         </div>
 
+        <!-- Down clues -->
         <div class="clue-column">
           <h3>DOWN</h3>
           <ul>
-            <li><span class="clue-number">1</span><span>"The ___ is up!"</span></li>
-            <li><span class="clue-number">2</span><span>Like lotus root and wax apples</span></li>
-            <li><span class="clue-number">3</span><span>Drive dangerously in traffic</span></li>
-            <li><span class="clue-number">4</span><span>Spanish title</span></li>
-            <li><span class="clue-number">7</span><span>Scrabble value of D or G</span></li>
+            <li>
+              <span class="clue-number">1</span>
+              <span>"The ___ is up!"</span>
+            </li>
+            <li>
+              <span class="clue-number">2</span>
+              <span>Like lotus root and wax apples</span>
+            </li>
+            <li>
+              <span class="clue-number">3</span>
+              <span>Drive dangerously in traffic</span>
+            </li>
+            <li>
+              <span class="clue-number">4</span>
+              <span>Spanish title</span>
+            </li>
+            <li>
+              <span class="clue-number">7</span>
+              <span>Scrabble value of D or G</span>
+            </li>
           </ul>
         </div>
+
       </div>
     </div>
   </div>
 
-  <script>
-    const checkButton = document.getElementById('checkButton');
-    const checkMenu = document.getElementById('checkMenu');
-
-    checkButton.addEventListener('click', function (e) {
-      e.stopPropagation();
-      checkMenu.classList.toggle('show');
-    });
-
-    document.addEventListener('click', function (e) {
-      if (!checkMenu.contains(e.target) && e.target !== checkButton && !checkButton.contains(e.target)) {
-        checkMenu.classList.remove('show');
-      }
-    });
-
-    const timerElement = document.getElementById('timer');
-    let seconds = 0;
-
-    function formatTime(sec) {
-      const hrs = Math.floor(sec / 3600);
-      const mins = Math.floor((sec % 3600) / 60);
-      const secs = sec % 60;
-      return String(hrs).padStart(2, '0') + ':' + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-    }
-
-    setInterval(function () {
-      seconds++;
-      timerElement.textContent = formatTime(seconds);
-    }, 1000);
-  </script>
 </body>
 </html>
