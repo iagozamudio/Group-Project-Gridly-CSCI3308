@@ -38,6 +38,7 @@ body {
 
 .left-panel {
     width: 700px;
+    margin-left: 180px;
 }
 
 .board-section {
@@ -110,7 +111,6 @@ body {
     background-color: #4a4a4a;
 }
 
-
 .board-wrap {
     width: 454px;
 }
@@ -138,8 +138,42 @@ body {
     left: 8px;
     font-size: 0.95rem;
     color: #000;
+    pointer-events: none;
 }
 
+.cell-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #111;
+    cursor: pointer;
+    caret-color: transparent;
+    outline: none;
+    padding-top: 18px;
+}
+
+.cell.highlight {
+    background-color: #a7c4e0;
+}
+
+.cell.selected {
+    background-color: #ffd700;
+}
+
+.cell.correct .cell-input {
+    color: green;
+}
+
+.cell.incorrect .cell-input {
+    color: red;
+}
 
 .time-row {
     width: auto;
@@ -155,7 +189,6 @@ body {
     border-bottom: 3px solid #fff;
     padding: 0 3px 0px;
 }
-
 
 .clues-panel {
     display: grid;
@@ -187,17 +220,22 @@ body {
     color: #e0e0e0;
     font-size: 0.9rem;
     padding: 5px 6px;
+    cursor: pointer;
+}
+
+.clue-column li:hover {
+    background-color: #3a3a3a;
 }
 
 .clue-number {
     font-weight: 700;
 }
 
+/* Active clue highlight */
 .active-clue-item {
     background-color: #00d9ff;
     color: #111;
 }
-
 
 @media (max-width: 1200px) {
     .page-shell {
@@ -253,6 +291,11 @@ body {
         justify-content: center;
     }
 
+    .cell-input {
+        font-size: 1rem;
+        padding-top: 14px;
+    }
+
     .number {
         font-size: 0.8rem;
         top: 4px;
@@ -266,11 +309,6 @@ body {
     .time-row span {
         font-size: 1.6rem;
     }
-}
-
-.left-panel {
-    width: 700px;
-    margin-left: 180px;   
 }
 
 .sidebar {

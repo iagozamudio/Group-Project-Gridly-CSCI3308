@@ -12,7 +12,7 @@
 <body>
     <!-- Sidebar (TO-DO) -->
     <div class="sidebar"></div>
-    
+
     <div class="container">
 
     <!-- Logo -->
@@ -49,12 +49,12 @@
             </div>
 
             <!-- Erase button -->
-            <button class="tool-btn" type="button">
+            <button class="tool-btn" type="button" id="eraseButton">
               <i class="fa-solid fa-eraser"></i>
             </button>
 
             <!-- Hint button -->
-            <button class="tool-btn" type="button">
+            <button class="tool-btn" type="button" id="hintButton">
               <i class="fa-regular fa-lightbulb"></i>
             </button>
           </div>
@@ -62,44 +62,8 @@
           <!-- Board + timer -->
           <div class="board-wrap">
 
-            <!-- Crossword grid -->
-            <div class="board">
-
-              <!-- Row 1 -->
-              <div class="cell"><span class="number">1</span></div>
-              <div class="cell"><span class="number">2</span></div>
-              <div class="cell"><span class="number">3</span></div>
-              <div class="cell"><span class="number">4</span></div>
-              <div class="cell black"></div>
-
-              <!-- Row 2 -->
-              <div class="cell"><span class="number">5</span></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell black"></div>
-
-              <!-- Row 3 -->
-              <div class="cell"><span class="number">6</span></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell"><span class="number">7</span></div>
-
-              <!-- Row 4 -->
-              <div class="cell black"></div>
-              <div class="cell"><span class="number">8</span></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-
-              <!-- Row 5 -->
-              <div class="cell black"></div>
-              <div class="cell"><span class="number">9</span></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-            </div>
+            <!-- Crossword grid — populated by game.js -->
+            <div class="board"></div>
 
             <!-- Timer -->
             <div class="time-row">
@@ -109,61 +73,19 @@
         </div>
       </div>
 
-      <!-- Clues section -->
+      <!-- Clues section — populated by game.js -->
       <div class="clues-panel">
 
         <!-- Across clues -->
         <div class="clue-column">
           <h3>ACROSS</h3>
-          <ul>
-            <li class="active-clue-item">
-              <span class="clue-number">1</span>
-              <span>1975 Spielberg film that's considered the first summer blockbuster</span>
-            </li>
-            <li>
-              <span class="clue-number">5</span>
-              <span>"Oh okay, gotcha"</span>
-            </li>
-            <li>
-              <span class="clue-number">6</span>
-              <span>Athlete from New York or San Francisco, in different sports</span>
-            </li>
-            <li>
-              <span class="clue-number">8</span>
-              <span>Declare publicly</span>
-            </li>
-            <li>
-              <span class="clue-number">9</span>
-              <span>Emperor who didn't actually fiddle while Rome burned</span>
-            </li>
-          </ul>
+          <ul></ul>
         </div>
 
         <!-- Down clues -->
         <div class="clue-column">
           <h3>DOWN</h3>
-          <ul>
-            <li>
-              <span class="clue-number">1</span>
-              <span>"The ___ is up!"</span>
-            </li>
-            <li>
-              <span class="clue-number">2</span>
-              <span>Like lotus root and wax apples</span>
-            </li>
-            <li>
-              <span class="clue-number">3</span>
-              <span>Drive dangerously in traffic</span>
-            </li>
-            <li>
-              <span class="clue-number">4</span>
-              <span>Spanish title</span>
-            </li>
-            <li>
-              <span class="clue-number">7</span>
-              <span>Scrabble value of D or G</span>
-            </li>
-          </ul>
+          <ul></ul>
         </div>
 
       </div>
