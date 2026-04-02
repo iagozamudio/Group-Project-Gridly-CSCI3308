@@ -1,0 +1,345 @@
+For the Profile Page: CHATGPT was used for debuggig and fixing up any issues
+<!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Bootstrap demo</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+      </head>
+      <body>
+        <!--Nav Bar-->
+        <body class="bg-dark text-white">
+
+            <!--Nav Bar-->
+            <nav class="navbar navbar-expand-lg navbar-black bg-black">
+              <div class="container-fluid">
+                <a class="navbar-brand text-white" href="#">Gridly</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                  <div class="navbar-nav">
+                    <a class="nav-link active text-white" href="../pages/home.html">Home</a>
+                    <a class="nav-link text-white" href="#">LeaderBoard</a>
+                  </div>
+
+                  <div class ="ms-auto"> 
+                    <button class = "btn btn-outline-light" type="button" data-bs-toggle="offfcanvas" data-bs-target="#settingsSidebar">
+                        <i class = "bi bi-gear"></i>
+                </div>
+
+              </div>
+            </nav>
+
+        <!--Gen AI was used to help me create the slide bar for the settings-->
+        <!--Settings Sidebar-->
+        <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="settingsSidebar">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Settings</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="list-group">
+                <li class="list-group-item bg-dark text-white border-secondary">Profile</li>
+                <li class="list-group-item bg-dark text-white border-secondary">Account</li>
+                <li class="list-group-item bg-dark text-white border-secondary">Privacy</li>
+                <li class="list-group-item bg-dark text-white border-secondary">Notifications</li>
+              </ul>
+          </div>
+        </body>
+
+            
+        <!-- Bootstrap JS -->
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+      </body>
+    </html>
+ The sttings icon is working but not teh slideable menu bar
+ You’re super close — the issue is just a few small mistakes that break the offcanvas.
+
+### ❌ Problems in your code
+
+1. **Typo in `data-bs-toggle`**
+
+```html
+data-bs-toggle="offfcanvas"
+```
+
+👉 should be:
+
+```html
+data-bs-toggle="offcanvas"
+```
+
+---
+
+2. **Missing closing `</button>`**
+   Your button never closes, which breaks the DOM.
+
+---
+
+3. **You have TWO `<body>` tags**
+   That can mess up Bootstrap JS behavior.
+
+---
+
+4. **Navbar class is wrong**
+
+```html
+navbar-black bg-black
+```
+
+👉 Bootstrap doesn’t have `navbar-black`. Use:
+
+```html
+navbar-dark bg-dark
+```
+
+---
+
+5. **Duplicate Bootstrap JS**
+   You included it twice — not fatal, but messy.
+
+---
+
+## ✅ Fixed version (only what you need to change)
+
+### 🔧 Fix your button
+
+```html
+<button class="btn btn-outline-light" type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#settingsSidebar">
+  <i class="bi bi-gear"></i>
+</button>
+```
+
+---
+
+### 🔧 Fix navbar class
+
+```html
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+```
+
+---
+
+### 🔧 Remove extra `<body>`
+
+You should only have ONE:
+
+```html
+<body class="bg-dark text-white">
+```
+
+---
+
+### 🔧 Remove duplicate JS (keep one)
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+```
+
+---
+
+## 💥 Why it wasn’t working
+
+That one typo:
+
+```
+offfcanvas ❌
+offcanvas  ✅
+```
+
+👉 completely prevents Bootstrap from triggering the sidebar.
+
+---
+
+## 🚀 After fixing
+
+* Clicking ⚙️ will slide in the sidebar smoothly
+* Navbar stays dark
+* Layout behaves correctly
+
+---
+
+If you want next level, I can help you:
+
+* add **toggle switches inside settings (like real apps)**
+* animate the sidebar more
+* or make it save user preferences (dark/light mode)
+
+What of O want a background omage behind of my prifle pic icon. liek a big rectangle backgorund image 
+Ahh nice — you’re trying to create a **profile header banner** (like Discord, Twitter, etc.). That’s a great upgrade.
+
+---
+
+## 🧠 What you want
+
+* A **wide background image (rectangle banner)**
+* Profile picture **overlapping it**
+
+---
+
+## ✅ How to build it
+
+### 🔥 Replace your profile section with this:
+
+```html id="banner1"
+<!-- PROFILE BANNER -->
+<div class="position-relative">
+
+  <!-- Background Image -->
+  <div style="
+    background-image: url('https://images.unsplash.com/photo-1503264116251-35a269479413');
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+  ">
+  </div>
+
+  <!-- Profile Picture (overlapping) -->
+  <img src="https://i.pravatar.cc/150"
+       class="rounded-circle border border-light position-absolute"
+       style="width:120px; height:120px; object-fit: cover; bottom:-60px; left:30px;">
+
+</div>
+
+<!-- SPACE BELOW so it doesn't overlap -->
+<div style="height:70px;"></div>
+```
+
+---
+
+## ✅ Then keep your username + stats below it:
+
+```html id="banner2"
+<div class="px-3">
+  <h2>Username</h2>
+
+  <div class="d-flex gap-5 mt-2">
+    <div>
+      <h4>#</h4>
+      <p class="text-secondary">Active Streak</p>
+    </div>
+
+    <div>
+      <h4>#</h4>
+      <p class="text-secondary">Program Rating</p>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## 🔥 What this does
+
+* Banner image spans across the top
+* Profile pic **floats on top of it**
+* Looks like a real modern profile page
+
+---
+
+## 💡 Customize it
+
+### Change banner image
+
+```html id="bannerimg"
+background-image: url('YOUR_IMAGE_URL_HERE');
+```
+
+Good sources:
+
+* [https://unsplash.com](https://unsplash.com)
+* [https://picsum.photos/800/200](https://picsum.photos/800/200)
+
+---
+
+### Make it darker (cleaner look)
+
+Add overlay:
+
+```html id="overlay1"
+<div style="
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
+              url('https://images.unsplash.com/photo-1503264116251-35a269479413');
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+">
+</div>
+```
+I want all of the username and the rest of teh player stayus to be put next to teh prfile pic on teh right, also kind of overlapping teh backgrond pic  
+I want all of the username and the rest of teh player stayus to be put next to teh prfile pic on teh right, also kind of overlapping teh backgrond pic         <!--Main Content-->
+        <div class = "container=mid-10"> 
+          <!-- PROFILE BANNER -->
+        <div class="position-relative">
+
+            <!-- Background Image -->
+            <div style="
+              background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
+                          url('https://media.istockphoto.com/id/118393737/photo/crossword-background.jpg?s=1024x1024&w=is&k=20&c=OJZeiB_abADBcf7WEOX-OuMlzGe4pdC4SFAP79e-95s=');
+              height: 200px;
+              background-size: cover;
+              background-position: center;
+            ">
+            </div>
+  
+            <!-- Profile Picture -->
+            <img src="https://cdn.pixabay.com/photo/2017/06/13/12/54/profile-2398783_1280.png"
+                 class="rounded-circle border border-light position-absolute"
+                 style="width:225px; height:225px; object-fit: cover; bottom:-60px; left:30px;">
+  
+        <!-- Spacer -->
+          <div style="height:70px;"></div>
+
+          <!--User Information-->
+          <div class = "px-3">
+            <h2>Username</h2>
+
+            <div class ="d-flex gap-5 mt-2">
+              <div>
+                <h5>#</h5>
+                <pclass = "text-secondary">Points Earned</p>
+              </div>
+
+              <div>
+                <h5>#</h5>
+                <pclass = "text-secondary">Player Ranking</p>
+              </div>
+          </div>
+        </div>
+    </div>
+  
+
+       
+
+
+---
+
+## 🚀 Result
+
+You now have:
+
+* ✅ Banner background
+* ✅ Floating profile pic
+* ✅ Clean modern UI
+
+---
+
+## 🎯 Next level (if you want)
+
+I can help you add:
+
+* 📸 “Edit banner” button
+* 🟢 Online status dot on profile pic
+* ✏️ Editable username
+* 🎨 Animated gradient banner
+
+Just tell me 👍
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
