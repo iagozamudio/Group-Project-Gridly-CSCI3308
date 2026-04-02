@@ -2,9 +2,11 @@
   "name": "gridly",
   "main": "index.js",
   "dependencies": {
+    "@tailwindcss/cli": "^4.2.2",
+    "@tailwindcss/postcss": "^4.2.2",
     "bcryptjs": "^2.4.0",
     "body-parser": "^1.20.4",
-    "express": "^4.6.1",
+    "express": "^4.22.1",
     "express-handlebars": "^7.1.2",
     "express-session": "^1.19.0",
     "nodemon": "^3.1.14",
@@ -12,6 +14,20 @@
   },
   "scripts": {
     "prestart": "npm install",
-    "start": "nodemon index.js"
+    "start": "nodemon tmp.js",
+    "build:css": "postcss css/styles.css -o css/output.css",
+    "watch:css": "postcss css/styles.css -o css/output.css --watch"
+  },
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "postcss-cli": "^11.0.1",
+    "tailwindcss": "^4.2.2"
   }
 }
