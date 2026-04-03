@@ -1,6 +1,6 @@
 {
   "name": "gridly",
-  "main": "index.js",
+  "main": "tmp.js",
   "dependencies": {
     "@tailwindcss/cli": "^4.2.2",
     "@tailwindcss/postcss": "^4.2.2",
@@ -16,7 +16,9 @@
     "prestart": "npm install",
     "start": "nodemon tmp.js",
     "build:css": "postcss css/styles.css -o css/output.css",
-    "watch:css": "postcss css/styles.css -o css/output.css --watch"
+    "watch:css": "postcss css/styles.css -o css/output.css --watch",
+    "test": "mocha",
+    "testandrun": "npm run prestart && npm run test && npm start"
   },
   "version": "1.0.0",
   "description": "",
@@ -28,6 +30,10 @@
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
     "postcss-cli": "^11.0.1",
-    "tailwindcss": "^4.2.2"
+    "tailwindcss": "^4.2.2",
+    "mocha": "^6.2.2",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "npm-run-all": "^4.1.5"
   }
 }

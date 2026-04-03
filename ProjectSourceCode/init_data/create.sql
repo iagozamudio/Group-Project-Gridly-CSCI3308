@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS security_questions (
+/*CREATE TABLE IF NOT EXISTS security_questions (
     id SERIAL PRIMARY KEY,
 );
 
@@ -13,4 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
       FOREIGN KEY(security_question_id) 
       REFERENCES security_questions(id)
       ON DELETE SET NULL
+);*/
+
+CREATE TABLE users (
+  username VARCHAR(50) PRIMARY KEY,
+  password VARCHAR(255) NOT NULL
 );
