@@ -1,0 +1,31 @@
+﻿Weekly Release Notes:
+Initiating week: 
+* Created and completed Project Proposal, including:
+   * a communication plan
+   * Wireframes for all pages (including home, register, login, forgot my password, profile, settings, single player game, leaderboard) 
+   * Use-case diagram
+   * Development methodology
+   * Names of team members with GitHub usernames
+   * etc(the rest of the project proposal requirements)
+* Created file structure for the repository with proper parent folders
+* Created basic file structure for the ProjectSourceCode page
+* Identified tasks for the first week of work (details within the issues board and meeting notes)
+
+
+
+
+Week 1:
+* Created the following pages, most with limited functionality:
+   * Login page
+   * Register page
+   * Forgot my password page
+   * Minimal home page
+   * leaderboard page
+   * Profile page
+   * Single Player game page 
+* Created required development files, including: 
+   * gitignore
+   * individual .env files
+   * docker-compose.yaml
+   * package json 
+* Multiple pages have functional components that are waiting for testing and implementation in upcoming tasks
