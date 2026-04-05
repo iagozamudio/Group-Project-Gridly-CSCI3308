@@ -1,0 +1,57 @@
+<div class="d-flex flex-column align-items-center py-4">
+
+  <!-- Logo -->
+  <div class="logo-wrapper">
+    <img src="/img/logo.png" alt="Gridly Logo" class="img-fluid">
+  </div>
+
+  <!-- Card -->
+  <div class="card shadow" style="width: 400px;">
+    <div class="card-body">
+
+      {{> message}}
+
+      <form action="/register" method="POST">
+        <div class="mb-3">
+          <input type="text" id="username" name="username"
+                 class="form-control" placeholder="Username" required>
+          <label for="username" class="form-label mt-1">Username</label>
+        </div>
+        <div class="mb-3">
+          <input type="password" id="password" name="password"
+                 class="form-control" placeholder="Password" required>
+          <label for="password" class="form-label mt-1">Password</label>
+        </div>
+        <div class="mb-3">
+          <select id="securityQuestion" name="securityQuestion" class="form-select" required>
+            <option value="" disabled selected>Choose a security question</option>
+            <option value="q1">What was the name of your first pet?</option>
+            <option value="q2">What city were you born in?</option>
+            <option value="q3">What is your mother's maiden name?</option>
+            <option value="q4">What was the make of your first car?</option>
+          </select>
+          <label for="securityQuestion" class="form-label mt-1">Choose a security question</label>
+        </div>
+        <div class="mb-3">
+          <input type="text" id="securityAnswer" name="securityAnswer"
+                 class="form-control" placeholder="Answer security question" required>
+          <label for="securityAnswer" class="form-label mt-1">Answer security question</label>
+        </div>
+        <div class="d-grid mb-2">
+          <button type="submit" class="btn btn-primary">Sign Up</button>
+        </div>
+      </form>
+
+      <div class="divider-waves">
+        <div class="wave-line"></div>
+        <span class="px-2">or</span>
+        <div class="wave-line"></div>
+      </div>
+
+      <div class="d-grid mt-2">
+        <a href="/login" class="btn btn-success">Log In</a>
+      </div>
+
+    </div>
+  </div>
+</div>

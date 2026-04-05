@@ -1,0 +1,43 @@
+<div class="d-flex flex-column align-items-center py-4">
+
+  <!-- Logo -->
+  <img src="/img/logo.png" alt="Gridly Logo" class="img-fluid mb-4" style="max-width: 400px;">
+
+  <!-- Card -->
+  <div class="card shadow" style="width: 400px;">
+    <div class="card-body">
+
+      {{> message}}
+
+      <form action="/login" method="POST">
+        <div class="mb-3">
+          <input type="text" id="username" name="username"
+                 class="form-control" placeholder="Username" required>
+          <label for="username" class="form-label mt-1">Username</label>
+        </div>
+        <div class="mb-3">
+          <input type="password" id="password" name="password"
+                 class="form-control" placeholder="Password" required>
+          <div class="d-flex justify-content-between mt-1">
+            <label for="password" class="form-label">Password</label>
+            <a href="/forgot-password" class="forgot-link" style="color:#aaa; font-size:0.85rem;">Forgot password?</a>
+          </div>
+        </div>
+        <div class="d-grid mb-2">
+          <button type="submit" class="btn btn-success">Log In</button>
+        </div>
+      </form>
+
+      <div class="divider-waves">
+        <div class="wave-line"></div>
+        <span class="px-2">or</span>
+        <div class="wave-line"></div>
+      </div>
+
+      <div class="d-grid mt-2">
+        <a href="/register" class="btn btn-primary">Sign Up</a>
+      </div>
+
+    </div>
+  </div>
+</div>
