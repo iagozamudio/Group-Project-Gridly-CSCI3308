@@ -77,7 +77,7 @@ app.post('/login', async (req, res) => {
     );
     const match = await bcrypt.compare(req.body.password, user.password);
     if (!match) {
-      return res.render('pages/login', {
+      return res.render('pages/home', {
         message: 'Incorrect username or password.',
         error: true
       });
