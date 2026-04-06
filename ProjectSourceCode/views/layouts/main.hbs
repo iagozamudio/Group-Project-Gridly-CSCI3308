@@ -9,12 +9,15 @@
 
   <!-- Your CSS -->
   <link rel="stylesheet" href="/css/loginRegistration.css">
-  <link rel="stylesheet" href="/css/home.css">
-<link rel="stylesheet" href="/css/output.css">
+  {{!-- <link rel="stylesheet" href="/css/home.css">
+<link rel="stylesheet" href="/css/output.css"> --}}
+{{#if isHome}}
+    <link rel="stylesheet" href="/css/home.css">
+  {{/if}}
 </head>
 <body>
 
- {{> navbar}}
+ {{!-- {{> navbar}} --}}
 
   {{{body}}}
 <!-- Bootstrap JS -->
