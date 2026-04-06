@@ -43,6 +43,19 @@ Meeting with Kelechi - Monday 12:45-1:00 pm
 --> One person will finish the authentication process, including meaningful security questions, sql databases, and interaction between login/registration/password-reset. (Iago)
 --> REFER TO THE GITHUB ISSUES BOARD FOR TASKS 
 
+(Week 3 -- Xander Chisholm)
+Date: 4/6/26
+Week 3 meeting and log:
+
+Group meeting from 12:15-12:50
+--> tommy is gonna expand the list and make the acceptance critera for the puzzle word size to 6 or 7 words instead of 5
+--> Samara and Iago finish the handlebars refactor.
+--> Xander will clean up single player add some more features to it
+--> Juan will make scoring system Xander will intergrate it with single player game
+--> James finish up home pg bc people still need to intergrate things into it
+--> James also start websocket
+--> finish up ongoing things from last week
+
 
 
 
