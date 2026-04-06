@@ -29,3 +29,25 @@ Week 1:
    * docker-compose.yaml
    * package json 
 * Multiple pages have functional components that are waiting for testing and implementation in upcoming tasks
+Week 2:
+* Completed game logic
+   * The user can now enter single-player mode
+   * Complete the puzzle
+   * With a functioning pull from an array of questions and answers
+   * The puzzle is rendered within the 5x5 grid 
+   * The timer works and will be used in the scoring mechanic
+* Forgot my password, page now works completely
+   * The user’s security question and answer are stored in an SQL database 
+      * The database is linked via a foreign key to the users table
+   * The user can enter the forgot my password page and reset their password once their security question and answer are validated
+   * The password gets updated and stored
+   * Changed login routing in index.js to go to home after successful login
+* The file structure and file formatting have been updated to accommodate the switch to handle bars
+   * Added folders for pages, views, etc. 
+   * Changed existing static pages into dynamic pages
+   * Previous pages were updated to handlebars formatting
+   * Rendering through the index.js was updated with respect to the switch 
+* The logic for the game score has been created, but not yet implemented in code
+* Created a FAQ page for the Gridly website
+* The navigation sidebar was created for navigation between each page 
+   * Implemented as a handlebar and added to all previously existing pages
