@@ -12,6 +12,7 @@ const hbs = handlebars.create({
   extname: 'hbs',
   layoutsDir: __dirname + '/views/layouts',
   partialsDir: __dirname + '/views/partials',
+  defaultLayout: 'main'
 });
 
 // ── DB (mirrors lab-7 exactly) ──
@@ -31,6 +32,7 @@ db.connect()
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public'))); // for CSS and client-side JS
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
@@ -91,6 +93,10 @@ app.post('/login', async (req, res) => {
 
 app.get('/home', auth, (req, res) => {
   res.render('pages/home', { user: req.session.user });
+});
+
+app.get('/leaderboard', auth, (req, res) => {
+  res.render('pages/leaderboard');
 });
 
 app.get('/logout', auth, (req, res) => {

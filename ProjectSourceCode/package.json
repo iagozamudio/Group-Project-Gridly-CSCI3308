@@ -6,6 +6,7 @@
     "@tailwindcss/postcss": "^4.2.2",
     "bcryptjs": "^2.4.0",
     "body-parser": "^1.20.4",
+    "dotenv": "^17.4.0",
     "express": "^4.22.1",
     "express-handlebars": "^7.1.2",
     "express-session": "^1.19.0",
@@ -14,7 +15,7 @@
   },
   "scripts": {
     "prestart": "npm install",
-    "start": "nodemon tmp.js",
+    "start": "nodemon index.js",
     "build:css": "postcss css/styles.css -o css/output.css",
     "watch:css": "postcss css/styles.css -o css/output.css --watch",
     "test": "mocha",
@@ -28,12 +29,12 @@
   "type": "commonjs",
   "devDependencies": {
     "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.8",
-    "postcss-cli": "^11.0.1",
-    "tailwindcss": "^4.2.2",
-    "mocha": "^6.2.2",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "npm-run-all": "^4.1.5"
+    "mocha": "^6.2.2",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.8",
+    "postcss-cli": "^11.0.1",
+    "tailwindcss": "^4.2.2"
   }
 }
