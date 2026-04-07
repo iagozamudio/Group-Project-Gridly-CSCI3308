@@ -81,7 +81,43 @@ const crosswordClues = [
   { clue: "Baby bed", answer: "CRIB" },
   { clue: "Make amends", answer: "ATONE" },
   { clue: "Sound of hesitation", answer: "UM" },
-  { clue: "Affirmative vote", answer: "YEA" }
+  { clue: "Affirmative vote", answer: "YEA" },
+    
+  { clue: "Slightly wet", answer: "DAMP" },
+  { clue: "A shape with no corners", answer: "RING" },
+  { clue: "38th US president", answer: "FORD" },
+  { clue: "To put in your hands", answer: "HOLD" },
+  { clue: "Opposite of yes", answer: "NO" },
+  { clue: "Opposite of in", answer: "OUT" },
+  { clue: "Consumed", answer: "ATE" },
+  { clue: "Frozen water", answer: "ICE" },
+  { clue: "Exist", answer: "ARE" },
+  { clue: "Negative reply", answer: "NAH" },
+  
+  { clue: "Attempt", answer: "TRY" },
+  { clue: "Musical pause", answer: "REST" },
+  { clue: "Small child", answer: "TOT" },
+  { clue: "Friend", answer: "PAL" },
+  { clue: "Enemy", answer: "FOE" },
+  { clue: "Mother", answer: "MA" },
+  { clue: "Father", answer: "PA" },
+  { clue: "Baby bed", answer: "CRIB" },
+  { clue: "Writing tool", answer: "PEN" },
+  { clue: "Beverage holder", answer: "MUG" },
+  
+  { clue: "Affirmative vote", answer: "YEA" },
+    
+  
+
+    
+    
+
+
+
+
+
+
+  }
 ];
 
 // Set grid size to 5x5
