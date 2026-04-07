@@ -1,10 +1,10 @@
-# Creates the user table
+--Creates the user table
 CREATE TABLE if NOT EXISTS users (
   username VARCHAR(50) PRIMARY KEY,
   password VARCHAR(255) NOT NULL
 );
 
-#Creates security questions table
+--Creates security questions table
 CREATE TABLE IF NOT EXISTS security_questions (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
