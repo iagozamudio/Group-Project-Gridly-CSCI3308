@@ -12,28 +12,27 @@ CREATE TABLE IF NOT EXISTS clues (
     created_at TIMESTAMP 
 );
 
-CREATE TABLE IF NOT EXISTS puzzles (
-    puzzle_id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS riddle (
+    riddle_id SERIAL PRIMARY KEY,
     size INT NOT NULL,
-    attempts_needed INT,
     created_at TIMESTAMP 
 );
 
-CREATE TABLE IF NOT EXISTS puzzle_cells (
+CREATE TABLE IF NOT EXISTS riddle_cells (
     cell_id SERIAL PRIMARY KEY,
-    puzzle_id INT NOT NULL REFERENCES puzzles(puzzle_id),
+    riddle_id INT NOT NULL REFERENCES riddle(riddle_id),
     row_index INT NOT NULL,
     col_index INT NOT NULL,
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
     solution_letter CHAR(1),
     clue_number INT,
-    UNIQUE (puzzle_id, row_index, col_index),
-    FOREIGN KEY (puzzle_id) REFERENCES puzzles(puzzle_id)
+    UNIQUE (riddle_id, row_index, col_index),
+    FOREIGN KEY (riddle_id) REFERENCES riddle(riddle_id)
 );
 
-CREATE TABLE IF NOT EXISTS puzzle_words (
-    puzzle_word_id SERIAL PRIMARY KEY,
-    puzzle_id INT NOT NULL REFERENCES puzzles(puzzle_id),
+CREATE TABLE IF NOT EXISTS riddle_words (
+    riddle_word_id SERIAL PRIMARY KEY,
+    riddle_id INT NOT NULL REFERENCES riddle(riddle_id),
     clue_id INT NOT NULL REFERENCES clues(clue_id),
     answer VARCHAR(20) NOT NULL,
     clue_text TEXT NOT NULL,
@@ -41,21 +40,21 @@ CREATE TABLE IF NOT EXISTS puzzle_words (
     start_col INT NOT NULL,
     direction VARCHAR(10) NOT NULL CHECK (direction IN ('across', 'down')),
     clue_number INT,
-    UNIQUE (puzzle_id, start_row, start_col, direction),
-    FOREIGN KEY (puzzle_id) REFERENCES puzzles(puzzle_id),
+    UNIQUE (riddle_id, start_row, start_col, direction),
+    FOREIGN KEY (riddle_id) REFERENCES riddle(riddle_id),
     FOREIGN KEY (clue_id) REFERENCES clues(clue_id)
 );
 
 CREATE TABLE IF NOT EXISTS game_sessions (
     session_id SERIAL PRIMARY KEY,
     player_id INT REFERENCES players(player_id),
-    puzzle_id INT NOT NULL REFERENCES puzzles(puzzle_iD),
+    riddle_id INT NOT NULL REFERENCES riddle(riddle_id),
     elapsed_seconds INT NOT NULL DEFAULT 0,
     status VARCHAR(20) NOT NULL,
     started_at TIMESTAMP,
     completed_at TIMESTAMP,
     FOREIGN KEY (player_id) REFERENCES players(player_id),
-    FOREIGN KEY (puzzle_id) REFERENCES puzzles(puzzle_id)
+    FOREIGN KEY (riddle_id) REFERENCES riddle(riddle_id)
 );
 
 CREATE TABLE IF NOT EXISTS player_entries (
