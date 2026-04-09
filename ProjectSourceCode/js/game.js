@@ -14,6 +14,7 @@ document.addEventListener('click', function (e) {
 
 const timerElement = document.getElementById('timer');
 let seconds = 0;
+let completionTime = null; // stores final time string when puzzle is solved
 
 function formatTime(sec) {
     const hrs = Math.floor(sec / 3600);
@@ -22,7 +23,7 @@ function formatTime(sec) {
     return String(hrs).padStart(2, '0') + ':' + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
 }
 
-setInterval(function () {
+const timerInterval = setInterval(function () {
     seconds++;
     timerElement.textContent = formatTime(seconds);
 }, 1000);
@@ -241,7 +242,7 @@ const crosswordClues = [
   { clue: "DECA", answer: "TEN" },
   { clue: "Second", answer: "BETA" },
   { clue: "Fourth planet", answer: "MARS" },
-  { clue: "Fee-fi-fo-, answer: "FUM" },
+  { clue: "Fee-fi-fo-fum", answer: "FUM" },
   { clue: "Not mean", answer: "NICE" },
   { clue: "A fox's home", answer: "DEN" }, 
   { clue: "1985 American black comedy mystery film", answer: "CLUE" }, 
@@ -261,14 +262,14 @@ const crosswordClues = [
   { clue: "Interactive hobby where participants act out characters", answer: "LARP" }, 
 
   { clue: "2004 American science fiction adventure drama", answer: "LOST" },
-  { clue: "martial art based on grappling, ground fighting, and submission holds, answer: "BJJ" },
+  { clue: "Martial art based on grappling, ground fighting, and submission holds", answer: "BJJ" },
   { clue: "35th US president", answer: "JFK" }, 
   { clue: "2025 Pixar film", answer: "ELIO" }, 
 
   { clue: "2021 Pixar film", answer: "LUCA" }, 
   { clue: "36th US president", answer: "LBJ" },
   { clue: "English rock band formed in London in 1988", answer: "BLUR" },
-  { clue: "American basic cable sports broadcasting network, answer: "ESPN" },
+  { clue: "American basic cable sports broadcasting network", answer: "ESPN" },
   { clue: "American science fiction comedy involving aliens", answer: "MIB" },
   { clue: "Superman's alter-ego", answer: "KENT" }, 
   { clue: "Third Monday of January each year is dedicated to him", answer: "MLK" },
@@ -292,7 +293,7 @@ const crosswordClues = [
   { clue: "Colored part of the eye", answer: "IRIS" },
   { clue: "Not present at one's computer", answer: "AFK" },
   { clue: "2001 Spielberg film", answer: "AI" },
-  { clue: "A group of people deciding a court case, answer: "JURY" },
+  { clue: "A group of people deciding a court case", answer: "JURY" },
   { clue: "Stealing a motor vehicle", answer: "GTA" },
   { clue: "US foreign intelligence agency", answer: "CIA" },
   { clue: "US domestic law enforcement and intelligence agency", answer: "FBI" },
@@ -304,7 +305,7 @@ const crosswordClues = [
   { clue: "Colored part of the eye", answer: "IRIS" },
   { clue: "Not present at one's computer", answer: "AFK" },
   { clue: "2001 Spielberg film", answer: "AI" },
-  { clue: "A group of people deciding a court case, answer: "JURY" },
+  { clue: "A group of people deciding a court case", answer: "JURY" },
   { clue: "Stealing a motor vehicle", answer: "GTA" },
   { clue: "US foreign intelligence agency", answer: "CIA" },
   { clue: "US domestic law enforcement and intelligence agency", answer: "FBI" },
@@ -1350,8 +1351,7 @@ const crosswordClues = [
   { clue: "Highly valued northern freshwater fish", answer: "PIKE" },
   { clue: "Vacuum tube technology used in older monitors", answer: "CRT" }
   
-]
-
+];
 
 // Set grid size to 5x5
 const SIZE = 5;
@@ -1367,11 +1367,12 @@ function shuffle(array) {
     return array;
 }
 
-// Filter words that fit in 5x5 and shuffle them
+// Filter words that fit in the grid, deduplicate by answer, and shuffle
 const cluePool = shuffle(
     crosswordClues
     .map(c => ({ clue: c.clue, answer: c.answer.toUpperCase() }))
     .filter(c => c.answer.length >= 2 && c.answer.length <= SIZE)
+    .filter((c, i, arr) => arr.findIndex(x => x.answer === c.answer) === i)
 );
 
 // Place the first word in the middle of the grid
@@ -1499,7 +1500,7 @@ function buildGrid() {
 
 // Retry until at least 5 words
 let attempts = 0;
-while (buildGrid() < 5) {
+while (buildGrid() < 8) {
     attempts++;
 }
 
@@ -1706,6 +1707,7 @@ function onInput(e, r, c) {
     const input = e.target;
     const val = input.value.toUpperCase().replace(/[^A-Z]/g, "");
     input.value = val ? val[val.length - 1] : "";
+    checkWin();
 
     // Clear any prior check styling on this cell
     input.closest(".cell").classList.remove("correct", "incorrect");
@@ -1819,8 +1821,68 @@ document.querySelectorAll("#checkMenu button").forEach((btn, i) => {
 
 // Erase and Hint buttons
 document.getElementById("eraseButton").addEventListener("click", eraseSelected);
-document.getElementById("hintButton").addEventListener("click", revealHint);
+document.getElementById("hintButton").addEventListener("click", () => { revealHint(); checkWin(); });
 
 // Render board and clues
 renderBoard();
 renderClues();
+
+// Check if every letter cell matches the answer grid
+function checkWin() {
+    for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+            if (grid[r][c] === "") continue;
+            const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
+            if (!input || input.value !== grid[r][c]) return;
+        }
+    }
+    // All cells correct — puzzle solved
+    clearInterval(timerInterval);
+    completionTime = formatTime(seconds);
+    showWinPopup(completionTime);
+}
+
+// Show the win popup
+function showWinPopup(time) {
+    const overlay = document.createElement("div");
+    overlay.id = "win-overlay";
+    overlay.style.cssText = `
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.65);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 1000;
+    `;
+
+    const popup = document.createElement("div");
+    popup.id = "win-popup";
+    popup.style.cssText = `
+        background: #1e1e1e;
+        color: #fff;
+        border: 2px solid #fff;
+        border-radius: 12px;
+        padding: 40px 50px;
+        text-align: center;
+        font-family: inherit;
+        max-width: 360px;
+        width: 90%;
+    `;
+
+    popup.innerHTML = `
+        <h2 style="margin: 0 0 8px; font-size: 2rem; letter-spacing: 2px;">YOU WIN!</h2>
+        <p style="margin: 0 0 24px; font-size: 1rem; opacity: 0.7;">Puzzle complete</p>
+        <div style="font-size: 2.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 32px;">${time}</div>
+        <button id="win-close-btn" style="
+            background: #fff; color: #1e1e1e;
+            border: none; border-radius: 6px;
+            padding: 10px 28px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; letter-spacing: 1px;
+        ">CLOSE</button>
+    `;
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    document.getElementById("win-close-btn").addEventListener("click", () => {
+        overlay.remove();
+    });
+}
