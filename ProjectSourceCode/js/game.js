@@ -14,6 +14,7 @@ document.addEventListener('click', function (e) {
 
 const timerElement = document.getElementById('timer');
 let seconds = 0;
+let completionTime = null; // stores final time string when puzzle is solved
 
 function formatTime(sec) {
     const hrs = Math.floor(sec / 3600);
@@ -22,7 +23,7 @@ function formatTime(sec) {
     return String(hrs).padStart(2, '0') + ':' + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
 }
 
-setInterval(function () {
+const timerInterval = setInterval(function () {
     seconds++;
     timerElement.textContent = formatTime(seconds);
 }, 1000);
@@ -1352,8 +1353,8 @@ const crosswordClues = [
   
 ];
 
-// Set grid size to 7x7
-const SIZE = 7;
+// Set grid size to 5x5
+const SIZE = 5;
 let grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(""));
 let placedWords = []; // { answer, clue, row, col, dir }
 
@@ -1366,11 +1367,12 @@ function shuffle(array) {
     return array;
 }
 
-// Filter words that fit in 5x5 and shuffle them
+// Filter words that fit in the grid, deduplicate by answer, and shuffle
 const cluePool = shuffle(
     crosswordClues
     .map(c => ({ clue: c.clue, answer: c.answer.toUpperCase() }))
     .filter(c => c.answer.length >= 2 && c.answer.length <= SIZE)
+    .filter((c, i, arr) => arr.findIndex(x => x.answer === c.answer) === i)
 );
 
 // Place the first word in the middle of the grid
@@ -1496,9 +1498,9 @@ function buildGrid() {
     return placed;
 }
 
-// Retry until at least 7 words
+// Retry until at least 5 words
 let attempts = 0;
-while (buildGrid() < 7) {
+while (buildGrid() < 8) {
     attempts++;
 }
 
@@ -1705,6 +1707,7 @@ function onInput(e, r, c) {
     const input = e.target;
     const val = input.value.toUpperCase().replace(/[^A-Z]/g, "");
     input.value = val ? val[val.length - 1] : "";
+    checkWin();
 
     // Clear any prior check styling on this cell
     input.closest(".cell").classList.remove("correct", "incorrect");
@@ -1818,8 +1821,68 @@ document.querySelectorAll("#checkMenu button").forEach((btn, i) => {
 
 // Erase and Hint buttons
 document.getElementById("eraseButton").addEventListener("click", eraseSelected);
-document.getElementById("hintButton").addEventListener("click", revealHint);
+document.getElementById("hintButton").addEventListener("click", () => { revealHint(); checkWin(); });
 
 // Render board and clues
 renderBoard();
 renderClues();
+
+// Check if every letter cell matches the answer grid
+function checkWin() {
+    for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+            if (grid[r][c] === "") continue;
+            const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
+            if (!input || input.value !== grid[r][c]) return;
+        }
+    }
+    // All cells correct — puzzle solved
+    clearInterval(timerInterval);
+    completionTime = formatTime(seconds);
+    showWinPopup(completionTime);
+}
+
+// Show the win popup
+function showWinPopup(time) {
+    const overlay = document.createElement("div");
+    overlay.id = "win-overlay";
+    overlay.style.cssText = `
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.65);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 1000;
+    `;
+
+    const popup = document.createElement("div");
+    popup.id = "win-popup";
+    popup.style.cssText = `
+        background: #1e1e1e;
+        color: #fff;
+        border: 2px solid #fff;
+        border-radius: 12px;
+        padding: 40px 50px;
+        text-align: center;
+        font-family: inherit;
+        max-width: 360px;
+        width: 90%;
+    `;
+
+    popup.innerHTML = `
+        <h2 style="margin: 0 0 8px; font-size: 2rem; letter-spacing: 2px;">YOU WIN!</h2>
+        <p style="margin: 0 0 24px; font-size: 1rem; opacity: 0.7;">Puzzle complete</p>
+        <div style="font-size: 2.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 32px;">${time}</div>
+        <button id="win-close-btn" style="
+            background: #fff; color: #1e1e1e;
+            border: none; border-radius: 6px;
+            padding: 10px 28px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; letter-spacing: 1px;
+        ">CLOSE</button>
+    `;
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    document.getElementById("win-close-btn").addEventListener("click", () => {
+        overlay.remove();
+    });
+}
