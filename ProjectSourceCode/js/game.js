@@ -31,7 +31,6 @@ setInterval(function () {
 
 const crosswordClues = [
     
-    
   { clue: "Declare publicly", answer: "AVOW" },
   { clue: "Opposite of yes", answer: "NO" },
   { clue: "Prefix meaning again", answer: "RE" },
@@ -39,17 +38,14 @@ const crosswordClues = [
   { clue: "Consumed", answer: "ATE" },
   { clue: "Frozen water", answer: "ICE" },
   { clue: "Direction of sunrise", answer: "EAST" },
-  { clue: "Direction of sunrise", answer: "EAST" },
   { clue: "Negative reply", answer: "NAH" },
   { clue: "Before, poetically", answer: "ERE" },
   { clue: "Exist", answer: "ARE" },
 
   { clue: "A large body of water", answer: "SEA" },
-  { clue: "A large body of water", answer: "SEA" },
   { clue: "Opposite of out", answer: "IN" },
   { clue: "Actor's role", answer: "PART" },
   { clue: "Quick bite", answer: "NOSH" },
-  { clue: "Casual greeting", answer: "HEY" },
   { clue: "Casual greeting", answer: "HEY" },
   { clue: "Feline pet", answer: "CAT" },
   { clue: "Canine pet", answer: "DOG" },
@@ -59,7 +55,6 @@ const crosswordClues = [
   { clue: "Make a mistake", answer: "ERR" },
   { clue: "Therefore", answer: "SO" },
   { clue: "Not old", answer: "NEW" },
-  { clue: "To have travelled to or existed as", answer: "BEEN" },
   { clue: "To have travelled to or existed as", answer: "BEEN" },
   { clue: "Opposite of high", answer: "LOW" },
   { clue: "Unit of time", answer: "SEC" },
@@ -246,7 +241,7 @@ const crosswordClues = [
   { clue: "DECA", answer: "TEN" },
   { clue: "Second", answer: "BETA" },
   { clue: "Fourth planet", answer: "MARS" },
-  { clue: "Fee-fi-fo-", answer: "FUM" },
+  { clue: "Fee-fi-fo-, answer: "FUM" },
   { clue: "Not mean", answer: "NICE" },
   { clue: "A fox's home", answer: "DEN" }, 
   { clue: "1985 American black comedy mystery film", answer: "CLUE" }, 
@@ -266,14 +261,14 @@ const crosswordClues = [
   { clue: "Interactive hobby where participants act out characters", answer: "LARP" }, 
 
   { clue: "2004 American science fiction adventure drama", answer: "LOST" },
-  { clue: "martial art based on grappling, ground fighting, and submission holds", answer:"BJJ" },
+  { clue: "martial art based on grappling, ground fighting, and submission holds, answer: "BJJ" },
   { clue: "35th US president", answer: "JFK" }, 
   { clue: "2025 Pixar film", answer: "ELIO" }, 
 
   { clue: "2021 Pixar film", answer: "LUCA" }, 
   { clue: "36th US president", answer: "LBJ" },
   { clue: "English rock band formed in London in 1988", answer: "BLUR" },
-  { clue: "American basic cable sports broadcasting network", answer: "ESPN" },
+  { clue: "American basic cable sports broadcasting network, answer: "ESPN" },
   { clue: "American science fiction comedy involving aliens", answer: "MIB" },
   { clue: "Superman's alter-ego", answer: "KENT" }, 
   { clue: "Third Monday of January each year is dedicated to him", answer: "MLK" },
@@ -297,7 +292,7 @@ const crosswordClues = [
   { clue: "Colored part of the eye", answer: "IRIS" },
   { clue: "Not present at one's computer", answer: "AFK" },
   { clue: "2001 Spielberg film", answer: "AI" },
-  { clue: "A group of people deciding a court case", answer: "JURY" },
+  { clue: "A group of people deciding a court case, answer: "JURY" },
   { clue: "Stealing a motor vehicle", answer: "GTA" },
   { clue: "US foreign intelligence agency", answer: "CIA" },
   { clue: "US domestic law enforcement and intelligence agency", answer: "FBI" },
@@ -309,7 +304,7 @@ const crosswordClues = [
   { clue: "Colored part of the eye", answer: "IRIS" },
   { clue: "Not present at one's computer", answer: "AFK" },
   { clue: "2001 Spielberg film", answer: "AI" },
-  { clue: "A group of people deciding a court case,", answer: "JURY" },
+  { clue: "A group of people deciding a court case, answer: "JURY" },
   { clue: "Stealing a motor vehicle", answer: "GTA" },
   { clue: "US foreign intelligence agency", answer: "CIA" },
   { clue: "US domestic law enforcement and intelligence agency", answer: "FBI" },
@@ -1357,6 +1352,7 @@ const crosswordClues = [
   
 ]
 
+
 // Set grid size to 5x5
 const SIZE = 5;
 let grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(""));
@@ -1828,4 +1824,3 @@ document.getElementById("hintButton").addEventListener("click", revealHint);
 // Render board and clues
 renderBoard();
 renderClues();
-
