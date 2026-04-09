@@ -1,12 +1,14 @@
+<!-- TOP NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-black">
   <div class="container-fluid">
-
     <a class="navbar-brand text-white" href="/home">Gridly</a>
 
+    <!-- Toggle for mobile nav -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
+    <!-- Navbar links -->
     <div class="collapse navbar-collapse" id="navbarNav">
       <div class="navbar-nav me-auto">
         <a class="nav-link text-white" href="../pages/home.hbs">Home</a>
@@ -14,13 +16,11 @@
         <a class="nav-link text-white" href="../pages/Profile.hbs">Profile</a>
       </div>
 
-      <div class="ms-auto">
-        <button class="btn btn-outline-light" type="button">
-          ⚙️
-        </button>
-      </div>
+      <!-- 👉 SETTINGS BUTTON (triggers sidebar) -->
+      <button class="btn btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#settingsSidebar">
+        ⚙️
+      </button>
     </div>
-
   </div>
 </nav>
 
