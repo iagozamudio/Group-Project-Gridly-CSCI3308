@@ -268,7 +268,7 @@ const crosswordClues = [
   { clue: "2021 Pixar film", answer: "LUCA" }, 
   { clue: "36th US president", answer: "LBJ" },
   { clue: "English rock band formed in London in 1988", answer: "BLUR" },
-  { clue: "American basic cable sports broadcasting network, answer: "ESPN" },
+  { clue: "American basic cable sports broadcasting network", answer: "ESPN" },
   { clue: "American science fiction comedy involving aliens", answer: "MIB" },
   { clue: "Superman's alter-ego", answer: "KENT" }, 
   { clue: "Third Monday of January each year is dedicated to him", answer: "MLK" },
