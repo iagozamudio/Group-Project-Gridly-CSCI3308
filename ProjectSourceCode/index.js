@@ -1,3 +1,4 @@
+//TMP.js in use and index.js is not in use. Use it for testing purposes only. Do not use it for development or production.
 const express = require('express');
 const app = express();
 const handlebars = require('express-handlebars');
@@ -99,13 +100,6 @@ app.get('/leaderboard', auth, (req, res) => {
   res.render('pages/leaderboard');
 });
 
-app.get('/leaderboard', auth, (req, res) => {
-  res.render('pages/leaderboard');
-});
-
-app.get('/leaderboard', auth, (req, res) => {
-  res.render('pages/leaderboard');
-}); 
 
 app.get('/Profile', (req, res) => {
   res.render('pages/Profile');
