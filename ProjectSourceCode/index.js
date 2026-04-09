@@ -103,6 +103,14 @@ app.get('/leaderboard', auth, (req, res) => {
   res.render('pages/leaderboard');
 });
 
+app.get('/leaderboard', auth, (req, res) => {
+  res.render('pages/leaderboard');
+}); 
+
+app.get('/Profile', (req, res) => {
+  res.render('pages/Profile');
+});
+
 app.get('/logout', auth, (req, res) => {
   req.session.destroy();
   res.redirect('/login');
