@@ -81,6 +81,8 @@ app.get('/', (req, res) => res.redirect('/login'));
 // ── Page renders ─────────────────────────────────────────────────────────────
 app.get('/login',    (req, res) => res.render('pages/login'));
 app.get('/register', (req, res) => res.render('pages/register'));
+app.get('/profile', (req, res) => {res.render('pages/Profile');});
+app.get('/leaderboard', (req, res) => {res.render('pages/leaderboard');});
 
 // ── POST /register ────────────────────────────────────────────────────────────
 //
