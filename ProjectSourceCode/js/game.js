@@ -1351,8 +1351,7 @@ const crosswordClues = [
   { clue: "Vacuum tube technology used in older monitors", answer: "CRT" }
   
 ]
-  }
-];
+
 
 // Set grid size to 5x5
 const SIZE = 5;
