@@ -17,3 +17,10 @@ CREATE TABLE IF NOT EXISTS security_questions (
       ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS game_sessions (
+    session_id SERIAL PRIMARY KEY,
+    player_id INT REFERENCES players(player_id),
+    score INT NOT NULL,
+    ongoing BOOLEAN NOT NULL DEFAULT TRUE
+);
+

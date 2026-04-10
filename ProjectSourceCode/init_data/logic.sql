@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS riddle_words (
     FOREIGN KEY (clue_id) REFERENCES clues(clue_id)
 );
 
+/* MOVED TO CREATE.SQL
 CREATE TABLE IF NOT EXISTS game_sessions (
     session_id SERIAL PRIMARY KEY,
     player_id INT REFERENCES players(player_id),
@@ -56,7 +57,7 @@ CREATE TABLE IF NOT EXISTS game_sessions (
     FOREIGN KEY (player_id) REFERENCES players(player_id),
     FOREIGN KEY (riddle_id) REFERENCES riddle(riddle_id)
 );
-
+*/
 CREATE TABLE IF NOT EXISTS player_entries (
     entry_id SERIAL PRIMARY KEY,
     session_id INT NOT NULL REFERENCES game_sessions(session_id),
