@@ -183,7 +183,7 @@ app.post('/login', async (req, res) => {
 app.get('/home',   auth, (req, res) => res.render('pages/home', { user: req.session.user }));
 app.get('/logout', auth, (req, res) => { req.session.destroy(); res.redirect('/login'); });
 app.get('/profile', auth, (req, res) => {res.render('pages/Profile', { user: req.session.user});});
-
+app.get('/Settings', auth, (req, res) => {res.render('pages/Settings', { user: req.session.user});});
 // ── Forgot-password flow ──────────────────────────────────────────────────────
 const questionMap = {
   q1: 'What was the name of your first pet?',
