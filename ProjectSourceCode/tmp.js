@@ -84,6 +84,10 @@ app.get('/register', (req, res) => res.render('pages/register'));
 app.get('/profile', (req, res) => {res.render('pages/Profile');});
 app.get('/leaderboard', (req, res) => {res.render('pages/leaderboard');});
 
+//single player page route
+app.get('/singleplayer', auth, (req, res) => res.render('pages/SinglePlayer', { layout: false }));
+
+
 // ── POST /register ────────────────────────────────────────────────────────────
 //
 //  Positive case  → 200  { message: 'Success' }
@@ -243,6 +247,8 @@ app.post('/reset-password', async (req, res) => {
     res.render('pages/forgot-password', { message: 'An error occurred.', error: true });
   }
 });
+
+
 
 // ═════════════════════════════════════════════════════════════════════════════
 // EXPORT — must be app.listen(), not just app, so chai-http can bind to it
