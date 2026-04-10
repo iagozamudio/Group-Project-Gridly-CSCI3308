@@ -1,5 +1,3 @@
-//TMP.js in use and index.js is not in use. Use it for testing purposes only. Do not use it for development or production.
-//TMP.js in use and index.js is not in use. Use it for testing purposes only. Do not use it for development or production.
 const express = require('express');
 const app = express();
 const handlebars = require('express-handlebars');
@@ -14,7 +12,6 @@ const hbs = handlebars.create({
   extname: 'hbs',
   layoutsDir: __dirname + '/views/layouts',
   partialsDir: __dirname + '/views/partials',
-  defaultLayout: 'main'
 });
 
 // ── DB (mirrors lab-7 exactly) ──
@@ -80,7 +77,7 @@ app.post('/login', async (req, res) => {
     );
     const match = await bcrypt.compare(req.body.password, user.password);
     if (!match) {
-      return res.render('pages/login', {
+      return res.render('pages/home', {
         message: 'Incorrect username or password.',
         error: true
       });
@@ -97,13 +94,103 @@ app.get('/home', auth, (req, res) => {
   res.render('pages/home', { user: req.session.user });
 });
 
-app.get('/leaderboard', auth, (req, res) => {
-  res.render('pages/leaderboard');
+// ── Forgot Password Routes ──
+
+// Question key → human-readable text (matches register.hbs options)
+const questionMap = {
+  q1: "What was the name of your first pet?",
+  q2: "What city were you born in?",
+  q3: "What is your mother's maiden name?",
+  q4: "What was the make of your first car?",
+};
+
+// STEP 1 GET: render the blank forgot-password form
+app.get('/forgot-password', (req, res) => {
+  res.render('pages/forgot-password');
 });
 
+// STEP 1 POST: look up the username, return their security question
+app.post('/forgot-password', async (req, res) => {
+  const { username } = req.body;
+  try {
+    const row = await db.one(
+      'SELECT question FROM security_questions WHERE username = $1',
+      [username]
+    );
+    // Username found — render Step 2 with the question
+    res.render('pages/forgot-password', {
+      username,
+      question: row.question,
+      questionText: questionMap[row.question],
+    });
+  } catch (err) {
+    // Username not found in security_questions table
+    res.render('pages/forgot-password', {
+      message: 'No account found with that username.',
+      error: true,
+    });
+  }
+});
 
-app.get('/Profile', (req, res) => {
-  res.render('pages/Profile');
+// STEP 2 POST: check the security answer
+app.post('/verify-answer', async (req, res) => {
+  const { username, question, securityAnswer } = req.body;
+  try {
+    const row = await db.one(
+      'SELECT answer FROM security_questions WHERE username = $1',
+      [username]
+    );
+    if (securityAnswer.trim().toLowerCase() !== row.answer.trim().toLowerCase()) {
+      // Wrong answer — re-render Step 2 with an error
+      return res.render('pages/forgot-password', {
+        username,
+        question,
+        questionText: questionMap[question],
+        message: 'Incorrect answer. Please try again.',
+        error: true,
+      });
+    }
+    // Correct answer — render Step 3
+    res.render('pages/forgot-password', {
+      username,
+      resetReady: true,
+    });
+  } catch (err) {
+    res.render('pages/forgot-password', {
+      message: 'Something went wrong. Please start over.',
+      error: true,
+    });
+  }
+});
+
+// STEP 3 POST: hash and save the new password
+app.post('/reset-password', async (req, res) => {
+  const { username, newPassword, confirmPassword } = req.body;
+
+  if (newPassword !== confirmPassword) {
+    return res.render('pages/forgot-password', {
+      username,
+      resetReady: true,
+      message: 'Passwords do not match. Please try again.',
+      error: true,
+    });
+  }
+
+  try {
+    const hash = await bcrypt.hash(newPassword, 10);
+    await db.none(
+      'UPDATE users SET password = $1 WHERE username = $2',
+      [hash, username]
+    );
+    res.redirect('/login');
+  } catch (err) {
+    res.render('pages/forgot-password', {
+      username,
+      resetReady: true,
+      message: 'Error resetting password. Please try again.',
+      error: true,
+    });
+  }
 });
 
 app.get('/logout', auth, (req, res) => {
