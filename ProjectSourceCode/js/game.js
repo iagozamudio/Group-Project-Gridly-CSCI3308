@@ -1041,7 +1041,7 @@ const crosswordClues = [
   { clue: "The enclosed land around a house or other building", answer: "YARD" },
   { clue: "Cause to run", answer: "POUR" },
     
-        { clue: "Limit or restrict to", answer: "TIE" },
+  { clue: "Limit or restrict to", answer: "TIE" },
   { clue: "English economist and conservationist", answer: "WARD" },
   { clue: "The act of caressing with the lips", answer: "KISS" },
   { clue: "Relating to a recently developed fashion or style", answer: "MOD" },
