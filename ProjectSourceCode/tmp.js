@@ -248,6 +248,18 @@ app.post('/reset-password', async (req, res) => {
   }
 });
 
+// ── Test-only cleanup route (DELETE a user by username) ───────────────────────
+// Only active when NODE_ENV is not 'production' so it can never run in prod
+app.post('/test-cleanup', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') return res.status(404).end();
+  try {
+    await db.none('DELETE FROM users WHERE username = $1', [req.body.username]);
+    return res.status(200).json({ message: 'Cleaned' });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
 // ── POST /game-session  (save a completed puzzle) ─────────────────────────────
 app.post('/game-session', async (req, res) => {
   const { time_seconds } = req.body;
