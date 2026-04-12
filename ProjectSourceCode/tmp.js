@@ -248,7 +248,58 @@ app.post('/reset-password', async (req, res) => {
   }
 });
 
+// ── Test-only cleanup route (DELETE a user by username) ───────────────────────
+// Only active when NODE_ENV is not 'production' so it can never run in prod
+app.post('/test-cleanup', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') return res.status(404).end();
+  try {
+    await db.none('DELETE FROM users WHERE username = $1', [req.body.username]);
+    return res.status(200).json({ message: 'Cleaned' });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
 
+// ── POST /game-session  (save a completed puzzle) ─────────────────────────────
+app.post('/game-session', async (req, res) => {
+  const { time_seconds } = req.body;
+  const username = req.session.user?.username ?? null; // null = guest
+
+  if (typeof time_seconds !== 'number' || time_seconds < 0) {
+    return res.status(400).json({ message: 'Invalid time' });
+  }
+
+  try {
+    const row = await db.one(
+      `INSERT INTO game_sessions (username, time_seconds)
+       VALUES ($1, $2)
+       RETURNING session_id, time_seconds, completed_at`,
+      [username, time_seconds]
+    );
+    return res.status(201).json({ message: 'Saved', session: row });
+  } catch (err) {
+    console.error('Save session error:', err.message);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ── GET /api/leaderboard  (top 20 fastest completions) ───────────────────────
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const rows = await db.any(
+      `SELECT COALESCE(username, 'Guest') AS username,
+              time_seconds,
+              completed_at
+       FROM game_sessions
+       ORDER BY time_seconds ASC
+       LIMIT 20`
+    );
+    return res.json(rows);
+  } catch (err) {
+    console.error('Leaderboard error:', err.message);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // ═════════════════════════════════════════════════════════════════════════════
 // EXPORT — must be app.listen(), not just app, so chai-http can bind to it

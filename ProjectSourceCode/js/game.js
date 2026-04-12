@@ -1041,7 +1041,7 @@ const crosswordClues = [
   { clue: "The enclosed land around a house or other building", answer: "YARD" },
   { clue: "Cause to run", answer: "POUR" },
     
-        { clue: "Limit or restrict to", answer: "TIE" },
+  { clue: "Limit or restrict to", answer: "TIE" },
   { clue: "English economist and conservationist", answer: "WARD" },
   { clue: "The act of caressing with the lips", answer: "KISS" },
   { clue: "Relating to a recently developed fashion or style", answer: "MOD" },
@@ -1829,17 +1829,25 @@ renderClues();
 
 // Check if every letter cell matches the answer grid
 function checkWin() {
-    for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-            if (grid[r][c] === "") continue;
-            const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
-            if (!input || input.value !== grid[r][c]) return;
-        }
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c] === "") continue;
+      const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
+      if (!input || input.value !== grid[r][c]) return;
     }
-    // All cells correct — puzzle solved
-    clearInterval(timerInterval);
-    completionTime = formatTime(seconds);
-    showWinPopup(completionTime);
+  }
+
+  clearInterval(timerInterval);
+  completionTime = formatTime(seconds);
+
+  // Save to DB, then show popup regardless of whether save succeeds
+  fetch('/game-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ time_seconds: seconds })
+  })
+  .catch(err => console.warn('Could not save session:', err))
+  .finally(() => showWinPopup(completionTime));
 }
 
 // Show the win popup
