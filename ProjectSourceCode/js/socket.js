@@ -3,12 +3,15 @@ const ws = new WebSocket('ws://localhost:3000/ws');
 const user = JSON.parse(document.getElementById("user-data").textContent)
 let messageForm;
 let chatBox;
+let errorContainer;
 
 console.log(user);
 
 document.addEventListener("DOMContentLoaded", () => {
   messageForm = document.getElementById("sendMessageForm");
   chatBox = document.getElementById("chatbox");
+  errorContainer = document.getElementById("errorContainer")
+  
   messageForm.addEventListener("submit", function (e) {
     e.preventDefault();
     let formData = new FormData(e.target);
@@ -19,6 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
       "text": formData.get("message")
     }
     ws.send(JSON.stringify(message))
+  })
+
+  errorContainer.addEventListener("click", function(e) {
+    e.target.parentElement.remove();
   })
 });
 
@@ -33,8 +40,9 @@ ws.onmessage = (event) => {
   if (data.type == "chat"){
     if (data.status != "failure"){
       addMessage(data.text, data.sender)
+    } else {
+      addError(data.text);
     }
-    // TODO handle failure to send
   }
 };
 ws.onclose = () => {
@@ -45,7 +53,6 @@ ws.onerror = (err) => {
 };
 
 const addMessage = (text, username) => {
-  console.log("adding message");
   let whichUser = 2;
   console.log(username, user.username)
   if (username == user.username){
@@ -58,4 +65,9 @@ const addMessage = (text, username) => {
   chatBox.appendChild(newMessage);
 }
 
+const addError = (errorMsg) => {
+  let newError = document.createElement("div")
+  newError.innerHTML = `Error: ${errorMsg} <button>x</button>`
+  errorContainer.appendChild(newError);
+}
 

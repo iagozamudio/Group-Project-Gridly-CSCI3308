@@ -50,7 +50,7 @@ wss.on("connection", (ws, req) => {
 
     ws.send(JSON.stringify({ type: "system", text: "Connected" }));
 
-    ws.on("message", (message) => {
+    ws.on("message", (message) => { // when message is recieved from user to websocket server
       let messageJSON;
 
       try {
@@ -59,48 +59,48 @@ wss.on("connection", (ws, req) => {
         return;
       }
 
-      if (messageJSON.type === "chat") {
-        const recipient = clients.get(messageJSON.recipient);
+      if (messageJSON.type === "chat") { // in the future game info will be sent, so other cases will be available as well
+        const recipient = clients.get(messageJSON.recipient); // pull recipient socket instance from map
 
-        if (messageJSON.recipient == "*") { // temporary; once multiplayer is ready delete
+        if (messageJSON.recipient == "*") { // temporary send to all users case; once multiplayer is ready delete
           const outgoing = {
             type: "chat",
             sender: username,
             text: messageJSON.text
           };
-          for (const [recipientUsername, client] of clients.entries()) {
+          for (const [recipientUsername, client] of clients.entries()) { // send to all connected users
             if (recipientUsername != username) {
               client.send(JSON.stringify(outgoing));
             }
           };
-          const successMessage = {
+          const successMessage = { // success msg to return to sender
             type: "chat",
             sender: username,
             text: messageJSON.text,
             status: "success"
           };
           ws.send(JSON.stringify(successMessage));
-        } else if (!recipient) {
+        } else if (!recipient) { // if recipient socket not found in clients map (e.g. they have disconnected or dont exist)
           ws.send(JSON.stringify({
             type: "chat",
             status: "failure",
             text: "Recipient not connected"
           }));
         } else {
-          const outgoing = {
+          const messageToRecipient = {
             type: "chat",
             sender: username,
             text: messageJSON.text
           };
 
-          recipient.send(JSON.stringify(outgoing));
+          recipient.send(JSON.stringify(messageToRecipient));
           const successMessage = {
             type: "chat",
             sender: username,
             text: messageJSON.text,
             status: "success"
           };
-          ws.send(JSON.stringify(successMessage));
+          ws.send(JSON.stringify(successMessage)); // success message is important; how else would the sender know whether or not their message has been sent, and whether or not it should be rendered in chat?
         }
       }
 
@@ -109,7 +109,7 @@ wss.on("connection", (ws, req) => {
 
     ws.on("close", () => {
       console.log("Client disconnected:", ws.username);
-      clients.delete(ws.username);
+      clients.delete(ws.username); // clients map only stores current (live) sockets
     });
   });
 });
