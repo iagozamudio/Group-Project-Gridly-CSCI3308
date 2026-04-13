@@ -17,9 +17,102 @@ const bodyParser    = require('body-parser');
 const session       = require('express-session');
 const bcrypt        = require('bcryptjs');
 const handlebars    = require('express-handlebars');
+const http = require('http');
+const WebSocket = require('ws');
+const { receiveMessageOnPort } = require('worker_threads');
+
+const sessionParser = session({
+  secret: "your-secret",
+  resave: false,
+  saveUninitialized: false,
+});
+
 
 const app  = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server, path: '/ws' });
 const PORT = 3000;
+
+const clients = new Map();
+wss.on("connection", (ws, req) => {
+  sessionParser(req, {}, () => {
+    if (!req.session || !req.session.user) {
+      ws.close();
+      return;
+    }
+
+    const username = req.session.user.username;
+    ws.username = username;
+
+    clients.set(username, ws);
+
+    console.log("WebSocket connected:", username);
+
+    ws.send(JSON.stringify({ type: "system", text: "Connected" }));
+
+    ws.on("message", (message) => {
+      let messageJSON;
+
+      try {
+        messageJSON = JSON.parse(message);
+      } catch {
+        return;
+      }
+
+      if (messageJSON.type === "chat") {
+        const recipient = clients.get(messageJSON.recipient);
+
+        if (messageJSON.recipient == "*") { // temporary; once multiplayer is ready delete
+          const outgoing = {
+            type: "chat",
+            sender: username,
+            text: messageJSON.text
+          };
+          for (const [recipientUsername, client] of clients.entries()) {
+            if (recipientUsername != username) {
+              client.send(JSON.stringify(outgoing));
+            }
+          };
+          const successMessage = {
+            type: "chat",
+            sender: username,
+            text: messageJSON.text,
+            status: "success"
+          };
+          ws.send(JSON.stringify(successMessage));
+        } else if (!recipient) {
+          ws.send(JSON.stringify({
+            type: "chat",
+            status: "failure",
+            text: "Recipient not connected"
+          }));
+        } else {
+          const outgoing = {
+            type: "chat",
+            sender: username,
+            text: messageJSON.text
+          };
+
+          recipient.send(JSON.stringify(outgoing));
+          const successMessage = {
+            type: "chat",
+            sender: username,
+            text: messageJSON.text,
+            status: "success"
+          };
+          ws.send(JSON.stringify(successMessage));
+        }
+      }
+
+      console.log("Received:", message.toString());
+    });
+
+    ws.on("close", () => {
+      console.log("Client disconnected:", ws.username);
+      clients.delete(ws.username);
+    });
+  });
+});
 
 // ── Database ──────────────────────────────────────────────────────────────────
 const db = pgp({
@@ -40,6 +133,10 @@ const hbs = handlebars.create({
   layoutsDir:  path.join(__dirname, 'views', 'layouts'),
   partialsDir: path.join(__dirname, 'views', 'partials'),
 });
+
+hbs.handlebars.registerHelper("json", function (context) {
+  return JSON.stringify(context);
+});
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -48,11 +145,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname)));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  secret:           process.env.SESSION_SECRET || 'gridly_dev_secret',
-  saveUninitialized: false,
-  resave:           false,
-}));
+app.use(sessionParser);
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 // chai-http .send(object) automatically sets Content-Type: application/json,
@@ -84,7 +177,7 @@ app.get('/register', (req, res) => res.render('pages/register'));
 app.get('/leaderboard', (req, res) => {res.render('pages/leaderboard');});
 
 //single player page route
-app.get('/singleplayer', auth, (req, res) => res.render('pages/SinglePlayer', { layout: false }));
+app.get('/singleplayer', auth, (req, res) => res.render('pages/SinglePlayer', { layout: false, user: req.session.user }));
 
 
 // ── POST /register ────────────────────────────────────────────────────────────
@@ -304,5 +397,5 @@ app.get('/api/leaderboard', async (req, res) => {
 // ═════════════════════════════════════════════════════════════════════════════
 // EXPORT — must be app.listen(), not just app, so chai-http can bind to it
 // ═════════════════════════════════════════════════════════════════════════════
-module.exports = app.listen(PORT);
+module.exports = server.listen(PORT);
 console.log(`Gridly running on port ${PORT}`);
