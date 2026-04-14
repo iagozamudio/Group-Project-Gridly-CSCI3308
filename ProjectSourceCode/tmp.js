@@ -262,7 +262,7 @@ app.post('/test-cleanup', async (req, res) => {
 
 // ── POST /game-session  (save a completed puzzle) ─────────────────────────────
 app.post('/game-session', async (req, res) => {
-  const { time_seconds } = req.body;
+  const { time_seconds, puzzle_data } = req.body;
   const username = req.session.user?.username ?? null; // null = guest
 
   if (typeof time_seconds !== 'number' || time_seconds < 0) {
@@ -271,10 +271,10 @@ app.post('/game-session', async (req, res) => {
 
   try {
     const row = await db.one(
-      `INSERT INTO game_sessions (username, time_seconds)
-       VALUES ($1, $2)
-       RETURNING session_id, time_seconds, completed_at`,
-      [username, time_seconds]
+      `INSERT INTO game_sessions (username, time_seconds, puzzle_data)
+       VALUES ($1, $2, $3)
+       RETURNING session_id, time_seconds, completed_at, puzzle_data`,
+      [username, time_seconds, puzzle_data ? JSON.stringify(puzzle_data) : null]
     );
     return res.status(201).json({ message: 'Saved', session: row });
   } catch (err) {
@@ -297,6 +297,21 @@ app.get('/api/leaderboard', async (req, res) => {
     return res.json(rows);
   } catch (err) {
     console.error('Leaderboard error:', err.message);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ── GET /api/game-session/:id  (retrieve a saved puzzle by session ID) ────────
+app.get('/api/game-session/:id', auth, async (req, res) => {
+  try {
+    const row = await db.oneOrNone(
+      `SELECT * FROM game_sessions WHERE session_id = $1`,
+      [req.params.id]
+    );
+    if (!row) return res.status(404).json({ message: 'Not found' });
+    return res.json(row);
+  } catch (err) {
+    console.error('Get session error:', err.message);
     return res.status(500).json({ message: 'Server error' });
   }
 });

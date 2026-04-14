@@ -12,9 +12,10 @@ CREATE TABLE IF NOT EXISTS security_questions (
 );
 
 CREATE TABLE IF NOT EXISTS game_sessions (
-  session_id SERIAL PRIMARY KEY,
-  username   VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL,  -- nullable until auth lands
+  session_id   SERIAL PRIMARY KEY,
+  username     VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL,
   time_seconds INT NOT NULL,
+  puzzle_data  JSONB,
   completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
