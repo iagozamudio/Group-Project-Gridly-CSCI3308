@@ -56,19 +56,6 @@ Group meeting from 12:15-12:50
 --> James also start websocket
 --> finish up ongoing things from last week
 
-(Week 3 -- Xander Chisholm)
-Date: 4/6/26
-Week 3 meeting and log:
-
-Group meeting from 12:15-12:50
---> tommy is gonna expand the list and make the acceptance critera for the puzzle word size to 6 or 7 words instead of 5
---> Samara and Iago finish the handlebars refactor.
---> Xander will clean up single player add some more features to it
---> Juan will make scoring system Xander will intergrate it with single player game
---> James finish up home pg bc people still need to intergrate things into it
---> James also start websocket
---> finish up ongoing things from last week
-
 Meeting with Kelechi - Monday 5:00-5:25 pm:
 
 --> Stress the implementation of the single player so that we can begin the two-player
@@ -78,6 +65,36 @@ Meeting with Kelechi - Monday 5:00-5:25 pm:
 --> Showed game logic and functionallity for the game itself
 --> Kelechi urged us to work in real time and commit throughout the week
 --> Avoid tendancy to commit last minute
+
+(Week 4 -- Tommy Kelebeng)
+Date: 4/13/26
+Week 4 meeting and log:
+
+Group meeting from 12:15-12:30
+
+--> Met in zoom/in-person. Everyone attended
+--> 2 player functionality to be worked on now
+--> Samra will continue working on the profile page  
+--> Xander will find a way to save the randomly generated info to the database to give to James for the websocket 
+--> Scoring to be finished (we'll likely just use time)
+--> To continue making sure the websockets display properly/consistently 
+--> Smooth out the pages, every page has Gridly statement printing out twice currently so to fix that
+--> Sidebar to be added to single-player page
+--> Way to make the leaderboard drop the table each day
+
+Meeting with Kelechi - Monday 12:30-12:50:
+
+--> multiplayer to be worked on, rendering the same puzzle for both players and websocket to relay that info to both parties
+--> Samra will work on updating stats like points earned for the profile page and such
+--> Hint function (how many hints you used and how it affects the score), so to have that implemented
+--> Juan will implement the scoring, hinting and other aspects of the math 
+--> Kelechi said the profile page should be updated accordingly, but multiplayer especially important
+--> Improve the CSS and overall appearance of the page (e.g. for leaderboard, allow to rank by score, by number of hints used to allow for variety in ranking)
+--> Tommy wil add more to the FAQ page to display more 
+--> Decide on how frequently the leaderboard should be updated (daily, weekly or biweekly?), seperate leaderboards for single and multiplayer
+
+
+
 
 
 
