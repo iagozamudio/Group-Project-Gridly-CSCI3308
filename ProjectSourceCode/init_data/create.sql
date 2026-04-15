@@ -3,6 +3,17 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255) NOT NULL
 );
 
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS profile_image VARCHAR(255);
+
+ALTER TABLE users
+ALTER COLUMN profile_image
+SET DEFAULT 'https://cdn.pixabay.com/photo/2017/06/13/12/54/profile-2398783_1280.png';
+
+UPDATE users
+SET profile_image = 'https://cdn.pixabay.com/photo/2017/06/13/12/54/profile-2398783_1280.png'
+WHERE profile_image IS NULL;
+
 CREATE TABLE IF NOT EXISTS security_questions (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) NOT NULL UNIQUE,
