@@ -805,7 +805,7 @@ app.post('/test-cleanup', async (req, res) => {
 // ── Save game session ────────────────────────────────────────────────────────
 app.post('/game-session', async (req, res) => {
   const { time_seconds, puzzle_data } = req.body;
-  const username = req.session.user?.username ?? null; // null = guest
+  const username = req.session.user?.username ?? null;
 
   if (typeof time_seconds !== 'number' || time_seconds < 0) {
     return res.status(400).json({ message: 'Invalid time' });
