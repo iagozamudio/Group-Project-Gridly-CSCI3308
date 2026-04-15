@@ -29,6 +29,8 @@ Week 1:
    * docker-compose.yaml
    * package json 
 * Multiple pages have functional components that are waiting for testing and implementation in upcoming tasks
+
+
 Week 2:
 * Completed game logic
    * The user can now enter single-player mode
@@ -51,3 +53,22 @@ Week 2:
 * Created a FAQ page for the Gridly website
 * The navigation sidebar was created for navigation between each page 
    * Implemented as a handlebar and added to all previously existing pages
+
+
+Weekly 3: 
+* Implemented a simple WebSocket that begins communication between players/sessions
+   * Currently working with the chat feature
+   * The chat feature works across different users 
+   * The main point is that the WebSocket will initialize the game for both players once we finalize the two-player
+* Profile page and settings page have been updated
+   * The setting page is partially complete
+   * Profile page needs rendering with user scores, but will be done similarly to the leaderboard 
+* The home page has added routing to the single player page
+* Test cases are implemented and working
+   * Including lab 10 test cases 
+   * Also includes extra credit individual test cases
+* The SinglePlayer.html has been converted to handlebar format
+* The leaderboard is now rendering with real values created by completing the single-player puzzle
+   * The SQL database has been created to save completion times
+   * The completion time and username get rendered in the leaderboard (serving as a score for the single-player game)
+   * The leaderboard gets rendered in order of fastest time at the top

@@ -371,9 +371,102 @@ const bcrypt        = require('bcryptjs');
 const handlebars    = require('express-handlebars');
 const fs            = require('fs');
 const multer        = require('multer');
+const http = require('http');
+const WebSocket = require('ws');
+const { receiveMessageOnPort } = require('worker_threads');
+
+const sessionParser = session({
+  secret: "your-secret",
+  resave: false,
+  saveUninitialized: false,
+});
+
 
 const app  = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server, path: '/ws' });
 const PORT = 3000;
+
+const clients = new Map();
+wss.on("connection", (ws, req) => {
+  sessionParser(req, {}, () => {
+    if (!req.session || !req.session.user) {
+      ws.close();
+      return;
+    }
+
+    const username = req.session.user.username;
+    ws.username = username;
+
+    clients.set(username, ws);
+
+    console.log("WebSocket connected:", username);
+
+    ws.send(JSON.stringify({ type: "system", text: "Connected" }));
+
+    ws.on("message", (message) => { // when message is recieved from user to websocket server
+      let messageJSON;
+
+      try {
+        messageJSON = JSON.parse(message);
+      } catch {
+        return;
+      }
+
+      if (messageJSON.type === "chat") { // in the future game info will be sent, so other cases will be available as well
+        const recipient = clients.get(messageJSON.recipient); // pull recipient socket instance from map
+
+        if (messageJSON.recipient == "*") { // temporary send to all users case; once multiplayer is ready delete
+          const outgoing = {
+            type: "chat",
+            sender: username,
+            text: messageJSON.text
+          };
+          for (const [recipientUsername, client] of clients.entries()) { // send to all connected users
+            if (recipientUsername != username) {
+              client.send(JSON.stringify(outgoing));
+            }
+          };
+          const successMessage = { // success msg to return to sender
+            type: "chat",
+            sender: username,
+            text: messageJSON.text,
+            status: "success"
+          };
+          ws.send(JSON.stringify(successMessage));
+        } else if (!recipient) { // if recipient socket not found in clients map (e.g. they have disconnected or dont exist)
+          ws.send(JSON.stringify({
+            type: "chat",
+            status: "failure",
+            text: "Recipient not connected"
+          }));
+        } else {
+          const messageToRecipient = {
+            type: "chat",
+            sender: username,
+            text: messageJSON.text
+          };
+
+          recipient.send(JSON.stringify(messageToRecipient));
+          const successMessage = {
+            type: "chat",
+            sender: username,
+            text: messageJSON.text,
+            status: "success"
+          };
+          ws.send(JSON.stringify(successMessage)); // success message is important; how else would the sender know whether or not their message has been sent, and whether or not it should be rendered in chat?
+        }
+      }
+
+      console.log("Received:", message.toString());
+    });
+
+    ws.on("close", () => {
+      console.log("Client disconnected:", ws.username);
+      clients.delete(ws.username); // clients map only stores current (live) sockets
+    });
+  });
+});
 
 // ── Database ──────────────────────────────────────────────────────────────────
 const db = pgp({
@@ -394,6 +487,10 @@ const hbs = handlebars.create({
   layoutsDir:  path.join(__dirname, 'views', 'layouts'),
   partialsDir: path.join(__dirname, 'views', 'partials'),
 });
+
+hbs.handlebars.registerHelper("json", function (context) {
+  return JSON.stringify(context);
+});
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -407,6 +504,7 @@ app.use(session({
   saveUninitialized: false,
   resave: false,
 }));
+app.use(sessionParser);
 
 // ── Multer config for profile uploads ────────────────────────────────────────
 const uploadDir = path.join(__dirname, 'img', 'uploads');
@@ -469,6 +567,16 @@ app.get('/singleplayer', auth, (req, res) =>
 );
 
 // ── POST /register ───────────────────────────────────────────────────────────
+//single player page route
+app.get('/singleplayer', auth, (req, res) => res.render('pages/SinglePlayer', { layout: false, user: req.session.user }));
+
+
+// ── POST /register ────────────────────────────────────────────────────────────
+//
+//  Positive case  → 200  { message: 'Success' }
+//  Negative cases → 400  { message: 'Invalid input' }
+//     • missing username or password (catches empty-string '')
+//     • duplicate username already in DB
 app.post('/register', async (req, res) => {
   const { username, password, securityQuestion, securityAnswer } = req.body;
 
@@ -696,8 +804,8 @@ app.post('/test-cleanup', async (req, res) => {
 
 // ── Save game session ────────────────────────────────────────────────────────
 app.post('/game-session', async (req, res) => {
-  const { time_seconds } = req.body;
-  const username = req.session.user?.username ?? null;
+  const { time_seconds, puzzle_data } = req.body;
+  const username = req.session.user?.username ?? null; // null = guest
 
   if (typeof time_seconds !== 'number' || time_seconds < 0) {
     return res.status(400).json({ message: 'Invalid time' });
@@ -705,10 +813,10 @@ app.post('/game-session', async (req, res) => {
 
   try {
     const row = await db.one(
-      `INSERT INTO game_sessions (username, time_seconds)
-       VALUES ($1, $2)
-       RETURNING session_id, time_seconds, completed_at`,
-      [username, time_seconds]
+      `INSERT INTO game_sessions (username, time_seconds, puzzle_data)
+       VALUES ($1, $2, $3)
+       RETURNING session_id, time_seconds, completed_at, puzzle_data`,
+      [username, time_seconds, puzzle_data ? JSON.stringify(puzzle_data) : null]
     );
 
     return res.status(201).json({ message: 'Saved', session: row });
@@ -761,5 +869,23 @@ app.post('/upload-profile-image', auth, upload.single('profileImage'), async (re
 });
 
 // ── Export server ─────────────────────────────────────────────────────────────
+// ── GET /api/game-session/:id  (retrieve a saved puzzle by session ID) ────────
+app.get('/api/game-session/:id', auth, async (req, res) => {
+  try {
+    const row = await db.oneOrNone(
+      `SELECT * FROM game_sessions WHERE session_id = $1`,
+      [req.params.id]
+    );
+    if (!row) return res.status(404).json({ message: 'Not found' });
+    return res.json(row);
+  } catch (err) {
+    console.error('Get session error:', err.message);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// EXPORT — must be app.listen(), not just app, so chai-http can bind to it
+// ═════════════════════════════════════════════════════════════════════════════
 module.exports = app.listen(PORT);
 console.log(`Gridly running on port ${PORT}`);

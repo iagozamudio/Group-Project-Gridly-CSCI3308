@@ -275,7 +275,7 @@ const crosswordClues = [
   { clue: "Third Monday of January each year is dedicated to him", answer: "MLK" },
   { clue: "They make honey", answer: "BEES" },
   { clue: "Blue fish voiced by Ellen DeGeneres", answer: "DORY" },
-  { clue: "The “Eternal City”", answer: "ROME" }, 
+  { clue: "The Eternal City", answer: "ROME" }, 
     
   { clue: "Lost clown fish", answer: "NEMO" },
   { clue: "Used after a company's name to indicate it is a legal corporation", answer: "INC" },  
@@ -984,7 +984,7 @@ const crosswordClues = [
   { clue: "Watch, observe, or inquire secretly", answer: "SPY" },
   { clue: "Be agreeable or acceptable to", answer: "SUIT" },
   { clue: "A triangular wooden float attached to the end of a log line", answer: "CHIP" },
-  { clue: "Virus that attacks the body’s immune system", answer: "HIV" },
+  { clue: "Virus that attacks the body's immune system", answer: "HIV" },
     
   { clue: "Impress greatly", answer: "WOW" },
   { clue: "Singer of Rainbow in the Dark", answer: "DIO" },
@@ -1030,7 +1030,7 @@ const crosswordClues = [
   { clue: "Lacking excess flesh", answer: "THIN" },
   { clue: "Treat with an agent; add to", answer: "DOSE" },
     
-        { clue: "Stake on the outcome of an issue", answer: "BET" }, 
+  { clue: "Stake on the outcome of an issue", answer: "BET" }, 
   { clue: "Chinese distance measure", answer: "LI" },
   { clue: "A Chadic language spoken in northern Nigeria", answer: "RON" },
   { clue: "People in general", answer: "FOLK" },
@@ -1290,7 +1290,7 @@ const crosswordClues = [
   { clue: "The second largest of the Hawaiian Islands", answer: "MAUI" },
   { clue: "The 23rd letter of the Greek alphabet", answer: "PSI" },
     
-  { clue: "A step in dancing", answer: "PAS" }, //
+  { clue: "A step in dancing", answer: "PAS" },
   { clue: "An unpleasant or disastrous destiny", answer: "DOOM" },
   { clue: "Welsh industrialist and social reformer who founded cooperative communities", answer: "OWEN" },
   { clue: "A light informal meal", answer: "BITE" },
@@ -1829,25 +1829,38 @@ renderClues();
 
 // Check if every letter cell matches the answer grid
 function checkWin() {
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      if (grid[r][c] === "") continue;
-      const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
-      if (!input || input.value !== grid[r][c]) return;
+    for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+            if (grid[r][c] === "") continue;
+            const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
+            if (!input || input.value !== grid[r][c]) return;
+        }
     }
-  }
 
-  clearInterval(timerInterval);
-  completionTime = formatTime(seconds);
+    clearInterval(timerInterval);
+    completionTime = formatTime(seconds);
 
-  // Save to DB, then show popup regardless of whether save succeeds
-  fetch('/game-session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ time_seconds: seconds })
-  })
-  .catch(err => console.warn('Could not save session:', err))
-  .finally(() => showWinPopup(completionTime));
+    // Serialize the randomly generated puzzle so it can be saved to the DB
+    const puzzleData = {
+        size: SIZE,
+        grid: grid,
+        words: placedWords.map(pw => ({
+            answer: pw.answer,
+            clue:   pw.clue,
+            row:    pw.row,
+            col:    pw.col,
+            dir:    pw.dir,
+        })),
+    };
+
+    // Save to DB, then show popup regardless of whether save succeeds
+    fetch('/game-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ time_seconds: seconds, puzzle_data: puzzleData })
+    })
+    .catch(err => console.warn('Could not save session:', err))
+    .finally(() => showWinPopup(completionTime));
 }
 
 // Show the win popup

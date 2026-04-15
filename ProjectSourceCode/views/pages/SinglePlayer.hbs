@@ -12,7 +12,9 @@
 <body>
    {{>navbar}}
     <!-- Sidebar (TO-DO) -->
-    <div class="sidebar"></div>
+    <div class="sidebar">
+      {{>navbar}}
+    </div>
 
     <div class="container">
 
@@ -92,6 +94,10 @@
       </div>
     </div>
   </div>
+  <script id="user-data" type="application/json">
+    {{{json user}}}
+  </script>
 
+  {{> chat}}
 </body>
 </html>
