@@ -10,13 +10,13 @@
 </head>
 
 <body>
-   {{>navbar}}
-    <!-- Sidebar (TO-DO) -->
-    <div class="sidebar">
-      {{>navbar}}
-    </div>
 
-    <div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    {{>navbar}}
+  </div>
+
+  <div class="container">
 
     <!-- Logo -->
     <div class="top-logo">
@@ -30,33 +30,23 @@
 
       <!-- Left side (board + tools) -->
       <div class="left-panel">
-
-        <!-- Board section -->
         <div class="board-section">
 
           <!-- Tool buttons -->
           <div class="tool-buttons">
             <div class="tool-group">
-
-              <!-- Check button -->
               <button class="tool-btn check-btn" type="button" id="checkButton">
                 <i class="fa-regular fa-circle-check"></i>
               </button>
-
-              <!-- Check dropdown -->
               <div class="check-menu" id="checkMenu">
                 <button type="button">Check Square</button>
                 <button type="button">Check Word</button>
                 <button type="button">Check Puzzle</button>
               </div>
             </div>
-
-            <!-- Erase button -->
             <button class="tool-btn" type="button" id="eraseButton">
               <i class="fa-solid fa-eraser"></i>
             </button>
-
-            <!-- Hint button -->
             <button class="tool-btn" type="button" id="hintButton">
               <i class="fa-regular fa-lightbulb"></i>
             </button>
@@ -64,40 +54,35 @@
 
           <!-- Board + timer -->
           <div class="board-wrap">
-
-            <!-- Crossword grid — populated by game.js -->
             <div class="board"></div>
-
-            <!-- Timer -->
             <div class="time-row">
               <span id="timer">00:00:00</span>
             </div>
           </div>
+
         </div>
       </div>
 
       <!-- Clues section — populated by game.js -->
       <div class="clues-panel">
-
-        <!-- Across clues -->
         <div class="clue-column">
           <h3>ACROSS</h3>
           <ul></ul>
         </div>
-
-        <!-- Down clues -->
         <div class="clue-column">
           <h3>DOWN</h3>
           <ul></ul>
         </div>
-
       </div>
+
     </div>
   </div>
+
   <script id="user-data" type="application/json">
     {{{json user}}}
   </script>
 
   {{> chat}}
+
 </body>
 </html>
