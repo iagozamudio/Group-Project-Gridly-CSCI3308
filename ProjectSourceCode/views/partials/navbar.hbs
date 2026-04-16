@@ -11,9 +11,9 @@
     <!-- Navbar links -->
     <div class="collapse navbar-collapse" id="navbarNav">
       <div class="navbar-nav me-auto">
-        <a class="nav-link text-white" href="/home">Home</a>
-        <a class="nav-link text-white" href="/leaderboard">Leaderboard</a>
-        <a class="nav-link text-white" href="/profile">Profile</a>
+        <a class="nav-link {{#if isHome}}text-success{{else}}text-white{{/if}}" href="/home">Home</a>
+        <a class="nav-link {{#if isLeaderboard}}text-success{{else}}text-white{{/if}}" href="/leaderboard">Leaderboard</a>
+        <a class="nav-link {{#if isProfile}}text-success{{else}}text-white{{/if}}" href="/profile">Profile</a>
       </div>
 
       <!-- 👉 SETTINGS BUTTON (triggers sidebar) -->

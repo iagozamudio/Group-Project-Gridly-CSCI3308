@@ -561,7 +561,13 @@ app.get('/', (req, res) => res.redirect('/login'));
 // ── Page renders ─────────────────────────────────────────────────────────────
 app.get('/login', (req, res) => res.render('pages/login'));
 app.get('/register', (req, res) => res.render('pages/register'));
-app.get('/leaderboard', (req, res) => res.render('pages/leaderboard'));
+app.get('/leaderboard', auth, (req, res) =>
+  res.render('pages/leaderboard', {
+    user: req.session.user,
+    isLeaderboard: true
+  })
+);
+
 app.get('/singleplayer', auth, (req, res) =>
   res.render('pages/SinglePlayer', { layout: false })
 );
@@ -677,7 +683,8 @@ app.post('/login', async (req, res) => {
 
 // ── Authenticated pages ──────────────────────────────────────────────────────
 app.get('/home', auth, (req, res) =>
-  res.render('pages/home', { user: req.session.user })
+  res.render('pages/home', { user: req.session.user,
+    isHome: true})
 );
 
 app.get('/logout', auth, (req, res) => {
@@ -686,7 +693,8 @@ app.get('/logout', auth, (req, res) => {
 });
 
 app.get('/profile', auth, (req, res) =>
-  res.render('pages/Profile', { user: req.session.user })
+  res.render('pages/Profile', { user: req.session.user,
+    isProfile: true })
 );
 
 app.get('/Settings', auth, (req, res) =>

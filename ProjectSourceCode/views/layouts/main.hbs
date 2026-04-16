@@ -1,8 +1,17 @@
-{{!-- --Renders text, safe for user input --}}
-{{> head}} 
+<!DOCTYPE html>
+<html lang="en">
 
-{{!-- --Renders the raw HTML --}}
-{{{body}}} 
+<head>
+    {{> head}}
+</head>
 
-{{!-- Renders text, safe for user input --}}
-{{> footer}} 
+<body class="d-flex flex-column min-vh-100">
+
+    <main class="flex-grow-1">
+        {{{body}}}
+    </main>
+
+    {{> footer}}
+
+</body>
+</html>
