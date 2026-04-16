@@ -28,5 +28,6 @@ CREATE TABLE IF NOT EXISTS game_sessions (
   time_seconds INT NOT NULL,
   puzzle_data  JSONB,
   completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  /* TODO add links between multiplayer sessions*/
 );
 

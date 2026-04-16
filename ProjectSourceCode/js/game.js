@@ -40,23 +40,40 @@ let placedWords  = [];
 let numbering    = [];
 let selectedCell = null;
 let selectedDir  = 'across';
+const params = new URLSearchParams(window.location.search);
+const session_id = params.get("session_id")
 
 // Boot
 async function init() {
+  let puzzle;
   try {
-    const res = await fetch('/api/puzzle');
+    if (!session_id){
+      const res = await fetch('/api/puzzle');
 
-    if (!res.ok) {
-      throw new Error("Bad response from server");
+      if (!res.ok) {
+        throw new Error("Bad response from server");
+      }
+
+      const text = await res.text();
+
+      if (!text) {
+        throw new Error("Empty response from server");
+      }
+      puzzle = JSON.parse(text);
+    } else {
+      const res = await fetch(`/api/game-session/${session_id}`);
+      if (!res.ok) {
+        throw new Error("Bad response from server");
+      }
+
+      const json = await res.json();
+
+      if (!json) {
+        throw new Error("Empty response from server");
+      }
+      puzzle = json.puzzle_data
     }
-
-    const text = await res.text();
-
-    if (!text) {
-      throw new Error("Empty response from server");
-    }
-
-    const puzzle = JSON.parse(text);
+   
 
     if (!puzzle.grid) {
       throw new Error("Puzzle missing grid");

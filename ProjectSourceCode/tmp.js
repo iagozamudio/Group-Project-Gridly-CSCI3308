@@ -412,9 +412,9 @@ wss.on("connection", (ws, req) => {
       } catch {
         return;
       }
-
-      if (messageJSON.type === "chat") { // in the future game info will be sent, so other cases will be available as well
-        const recipient = clients.get(messageJSON.recipient); // pull recipient socket instance from map
+      const recipient = clients.get(messageJSON.recipient);
+      if (messageJSON.type === "chat") { 
+       // pull recipient socket instance from map
 
         if (messageJSON.recipient == "*") { // temporary send to all users case; once multiplayer is ready delete
           const outgoing = {
@@ -456,8 +456,34 @@ wss.on("connection", (ws, req) => {
           };
           ws.send(JSON.stringify(successMessage)); // success message is important; how else would the sender know whether or not their message has been sent, and whether or not it should be rendered in chat?
         }
-      }
+      } else if (messageJSON.type == "challenge"){ // challenge/inviting other player to a game and all requests related to it
+        console.log("challenge recieved")
+        const status = messageJSON.status;
+        if (status == "sending"){ // challenge being sent from one user to another
+          recipient.send(JSON.stringify(messageJSON));
+          console.log("sending challenge")
+        } else if (status == "accepting"){ // acceptance being sent back from recipient
+          insertSessions(messageJSON.recipient, username).then(sessionIDs =>{
+            let response = {
+              "type": "challenge",
+              "status": "redirect"
+            }
+            let response1 = {
+              ...response,
+              session_id: sessionIDs[0]
+            } 
+            let response2 = {
+              ...response,
+              session_id: sessionIDs[1]
+            }
+            ws.send(JSON.stringify(response2))
+            recipient.send(JSON.stringify(response1))
+          }).catch(console.error);
+          
+        } else if (status == "rejecting"){ // rejection being sent back from recipient
 
+        }
+      }
       console.log("Received:", message.toString());
     });
 
@@ -468,6 +494,32 @@ wss.on("connection", (ws, req) => {
   });
 });
 
+async function insertSessions(user1, user2) {
+  try {
+    const puzzleData = generatePuzzle();
+
+    const result1 = await db.query(
+      `INSERT INTO game_sessions (username, time_seconds, puzzle_data)
+       VALUES ($1, 0, $2)
+       RETURNING session_id`,
+      [user1, puzzleData]
+    );
+
+    const result2 = await db.query(
+      `INSERT INTO game_sessions (username, time_seconds, puzzle_data)
+       VALUES ($1, 0, $2)
+       RETURNING session_id`,
+      [user2, puzzleData]
+    );
+
+
+    return [result1[0].session_id, result2[0].session_id];
+
+  } catch (err) {
+    console.error("DB ERROR:", err);
+    throw err;
+  }
+}
 // ── Database ──────────────────────────────────────────────────────────────────
 const db = pgp({
   host:     'db',
@@ -557,15 +609,13 @@ app.get('/', (req, res) => res.redirect('/login'));
 app.get('/login', (req, res) => res.render('pages/login'));
 app.get('/register', (req, res) => res.render('pages/register'));
 app.get('/leaderboard', (req, res) => res.render('pages/leaderboard'));
-app.get('/singleplayer', auth, (req, res) =>
-  res.render('pages/SinglePlayer', { layout: false, user: req.session.user  })
-);
-app.get('/lobby', auth, (req, res) =>
-  res.render('pages/lobby', { layout: false, user: req.session.user})
+app.get('/game', auth, (req, res) =>
+  res.render('pages/game', { layout: false, user: req.session.user  })
 );
 app.get('/twoplayer', auth, (req, res) =>
-  res.render('pages/TwoPlayer', { layout: false, user: req.session.user  })
+  res.render('pages/lobby', { layout: false, user: req.session.user})
 );
+
 // ── POST /register ────────────────────────────────────────────────────────────
 //
 //  Positive case  → 200  { message: 'Success' }
