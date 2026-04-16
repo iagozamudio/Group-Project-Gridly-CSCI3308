@@ -880,7 +880,42 @@ app.post('/upload-profile-image', auth, upload.single('profileImage'), async (re
     return res.redirect('/Settings');
   }
 });
+//── Update Username  ─────────────────────────────────────────────────────────────
+app.post('/update-username', auth, async (req, res) => {
+  const oldUsername = req.session.user.username;
+  const newUsername = req.body.newUsername?.trim();
 
+  if (!newUsername) {
+    return res.redirect('/Settings');
+  }
+
+  if (newUsername === oldUsername) {
+    return res.redirect('/Settings');
+  }
+
+  try {
+    const existing = await db.oneOrNone(
+      'SELECT username FROM users WHERE username = $1',
+      [newUsername]
+    );
+
+    if (existing) {
+      return res.redirect('/Settings');
+    }
+
+    await db.none(
+      'UPDATE users SET username = $1 WHERE username = $2',
+      [newUsername, oldUsername]
+    );
+
+    req.session.user.username = newUsername;
+
+    return res.redirect('/Settings');
+  } catch (err) {
+    console.error('Update username error:', err.message);
+    return res.redirect('/Settings');
+  }
+});
 // ── Export server ─────────────────────────────────────────────────────────────
 // ── GET /api/game-session/:id  (retrieve a saved puzzle by session ID) ────────
 app.get('/api/game-session/:id', auth, async (req, res) => {
