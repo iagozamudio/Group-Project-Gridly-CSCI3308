@@ -567,6 +567,11 @@ app.get('/leaderboard', auth, (req, res) =>
     isLeaderboard: true
   })
 );
+app.get('/faq', (req, res) =>
+  res.render('pages/FAQ', {
+    isFAQ: true
+  })
+);
 
 app.get('/singleplayer', auth, (req, res) =>
   res.render('pages/SinglePlayer', { layout: false })
