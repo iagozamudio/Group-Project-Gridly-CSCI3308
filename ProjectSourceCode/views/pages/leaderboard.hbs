@@ -16,18 +16,71 @@
             <p class="text-white">LEADERBOARD</p>
         </div>
 
-        <div class="card shadow mx-auto" style="max-width: 600px;">
+        <div class="card shadow mx-auto" style="max-width: 650px;">
             <div class="card-body">
-                <h2 class="text-center mb-4">Top 20 Fastest Completions</h2>
-                <div class="list-group" id="leaderboard-list">
-                    <!-- populated by leaderboard.js -->
-                </div>
-            </div>
-        </div>
-    </div>
+
+                <!-- Tab navigation -->
+                <ul class="nav nav-tabs mb-4" id="leaderboardTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="sp-score-tab" data-bs-toggle="tab"
+                                data-bs-target="#sp-score" type="button" role="tab"
+                                aria-controls="sp-score" aria-selected="true">
+                            🏅 Single-Player Score
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="sp-time-tab" data-bs-toggle="tab"
+                                data-bs-target="#sp-time" type="button" role="tab"
+                                aria-controls="sp-time" aria-selected="false">
+                            ⏱️ Fastest Times
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tp-tab" data-bs-toggle="tab"
+                                data-bs-target="#tp" type="button" role="tab"
+                                aria-controls="tp" aria-selected="false">
+                            ⚔️ Two-Player Scores
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab content -->
+                <div class="tab-content" id="leaderboardTabContent">
+
+                    <!-- ── Tab 1: Single-player fastest times (original) ── -->
+                    <div class="tab-pane fade show active" id="sp-score" role="tabpanel" aria-labelledby="sp-score-tab">
+                        <h5 class="text-center text-muted mb-3">Top 20 Fastest Completions</h5>
+                        <div class="list-group" id="leaderboard-list">
+                            <!-- populated by leaderboard.js -->
+                        </div>
+                    </div>
+
+                    <!-- ── Tab 2: Single-player time ranking ── -->
+                    <div class="tab-pane fade" id="sp-time" role="tabpanel" aria-labelledby="sp-time-tab">
+                        <h5 class="text-center text-muted mb-3">Ranked by Completion Time</h5>
+                        <div class="list-group" id="sp-time-list">
+                            <!-- populated by leaderboard.js -->
+                        </div>
+                    </div>
+
+                    <!-- ── Tab 3: Two-player rankings ── -->
+                    <div class="tab-pane fade" id="tp" role="tabpanel" aria-labelledby="tp-tab">
+                        <h5 class="text-center text-muted mb-3">Two-Player Cumulative Scores</h5>
+                        <p class="text-center small text-muted">
+                            Score = <strong>MAX(0, 1000 &minus; seconds)</strong> per game + <strong>200 bonus</strong> for winning
+                        </p>
+                        <div class="list-group" id="tp-list">
+                            <!-- populated by leaderboard.js -->
+                        </div>
+                    </div>
+
+                </div><!-- /.tab-content -->
+
+            </div><!-- /.card-body -->
+        </div><!-- /.card -->
+    </div><!-- /.container -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/leaderboard.js"></script>
 </body>
 </html>
-

@@ -2021,6 +2021,55 @@ app.get('/api/puzzle', (req, res) => {
   }
 });
 
+//new leaderboard endpoint
+// ── GET /api/leaderboard/twoplayer  (top 20 by cumulative two-player score) ──
+app.get('/api/leaderboard/twoplayer', async (req, res) => {
+  try {
+    const rows = await db.any(
+      `SELECT COALESCE(username, 'Guest') AS username,
+              SUM(score)                  AS total_score,
+              COUNT(*)                    AS games_played,
+              SUM(CASE WHEN is_winner THEN 1 ELSE 0 END) AS wins
+       FROM two_player_sessions
+       GROUP BY username
+       ORDER BY total_score DESC
+       LIMIT 20`
+    );
+    return res.json(rows);
+  } catch (err) {
+    console.error('TP leaderboard error:', err.message);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ── POST /two-player-session  (save one player's result from a 2P game) ──────
+// Body: { game_id, time_seconds, is_winner }
+// The score formula: MAX(0, 1000 - time_seconds) + (is_winner ? 200 : 0)
+app.post('/two-player-session', auth, async (req, res) => {
+  const { game_id, time_seconds, is_winner } = req.body;
+  const username = req.session.user?.username ?? null;
+
+  if (!game_id || typeof time_seconds !== 'number' || time_seconds < 0) {
+    return res.status(400).json({ message: 'Invalid input' });
+  }
+
+  const score = Math.max(0, 1000 - time_seconds) + (is_winner ? 200 : 0);
+
+  try {
+    const row = await db.one(
+      `INSERT INTO two_player_sessions (game_id, username, time_seconds, is_winner, score)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING tp_session_id, score, completed_at`,
+      [game_id, username, time_seconds, !!is_winner, score]
+    );
+    return res.status(201).json({ message: 'Saved', session: row });
+  } catch (err) {
+    console.error('Save 2P session error:', err.message);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 // ═════════════════════════════════════════════════════════════════════════════
 // EXPORT — must be app.listen(), not just app, so chai-http can bind to it
 // ═════════════════════════════════════════════════════════════════════════════
