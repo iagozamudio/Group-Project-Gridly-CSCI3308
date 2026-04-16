@@ -61,7 +61,7 @@ const addMessage = (text, username) => {
   }
   let newMessage = document.createElement("li");
   newMessage.classList.add(`user${whichUser}`);
-  newMessage.innerHTML = `<span>${username}: </span>${text}`;
+  newMessage.innerHTML = `<span>${username}:</span> ${text}`;
   chatBox.appendChild(newMessage);
 }
 
