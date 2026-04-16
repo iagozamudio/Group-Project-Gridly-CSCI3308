@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crossword Game</title>
+  <link rel="stylesheet" href="../css/SinglePlayer.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="../js/game.js" defer></script>
+</head>
+
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    {{>navbar}}
+  </div>
+
+  <div class="container">
+
+    <!-- Logo -->
+    <div class="top-logo">
+      <div class="logo-wrapper">
+        <img src="/img/logo.png" alt="Logo" />
+      </div>
+    </div>
+
+    <!-- Page layout -->
+    <div class="page-shell">
+
+      <!-- Left side (board + tools) -->
+      <div class="left-panel">
+        <div class="board-section">
+
+          <!-- Tool buttons -->
+          <div class="tool-buttons">
+            <div class="tool-group">
+              <button class="tool-btn check-btn" type="button" id="checkButton">
+                <i class="fa-regular fa-circle-check"></i>
+              </button>
+              <div class="check-menu" id="checkMenu">
+                <button type="button">Check Square</button>
+                <button type="button">Check Word</button>
+                <button type="button">Check Puzzle</button>
+              </div>
+            </div>
+            <button class="tool-btn" type="button" id="eraseButton">
+              <i class="fa-solid fa-eraser"></i>
+            </button>
+            <button class="tool-btn" type="button" id="hintButton">
+              <i class="fa-regular fa-lightbulb"></i>
+            </button>
+          </div>
+
+          <!-- Board + timer -->
+          <div class="board-wrap">
+            <div class="board"></div>
+            <div class="time-row">
+              <span id="timer">00:00:00</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Clues section — populated by game.js -->
+      <div class="clues-panel">
+        <div class="clue-column">
+          <h3>ACROSS</h3>
+          <ul></ul>
+        </div>
+        <div class="clue-column">
+          <h3>DOWN</h3>
+          <ul></ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script id="user-data" type="application/json">
+    {{{json user}}}
+  </script>
+
+  {{> chat}}
+
+</body>
+</html>

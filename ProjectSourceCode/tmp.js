@@ -499,11 +499,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname)));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'gridly_dev_secret',
-  saveUninitialized: false,
-  resave: false,
-}));
 app.use(sessionParser);
 
 // ── Multer config for profile uploads ────────────────────────────────────────
@@ -563,14 +558,14 @@ app.get('/login', (req, res) => res.render('pages/login'));
 app.get('/register', (req, res) => res.render('pages/register'));
 app.get('/leaderboard', (req, res) => res.render('pages/leaderboard'));
 app.get('/singleplayer', auth, (req, res) =>
-  res.render('pages/SinglePlayer', { layout: false })
+  res.render('pages/SinglePlayer', { layout: false, user: req.session.user  })
 );
-
-// ── POST /register ───────────────────────────────────────────────────────────
-//single player page route
-app.get('/singleplayer', auth, (req, res) => res.render('pages/SinglePlayer', { layout: false, user: req.session.user }));
-
-
+app.get('/lobby', auth, (req, res) =>
+  res.render('pages/lobby', { layout: false, user: req.session.user})
+);
+app.get('/twoplayer', auth, (req, res) =>
+  res.render('pages/TwoPlayer', { layout: false, user: req.session.user  })
+);
 // ── POST /register ────────────────────────────────────────────────────────────
 //
 //  Positive case  → 200  { message: 'Success' }
@@ -2007,9 +2002,18 @@ app.get('/api/puzzle', (req, res) => {
     return res.status(500).json({ message: 'Failed to generate puzzle' });
   }
 });
+app.get('/api/players', (req, res) => {
+  try {
+    return res.json(Array.from(clients.keys()));
+  } catch (err) {
+    console.error('Player retrieval error:', err.message);
+    return res.status(500).json({ message: 'Failed to retrieve list of connected players' });
+  }
+});
+
 
 // ═════════════════════════════════════════════════════════════════════════════
 // EXPORT — must be app.listen(), not just app, so chai-http can bind to it
 // ═════════════════════════════════════════════════════════════════════════════
-module.exports = app.listen(PORT);
+module.exports = server.listen(PORT);
 console.log(`Gridly running on port ${PORT}`);
