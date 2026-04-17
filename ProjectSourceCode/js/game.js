@@ -18,6 +18,11 @@ document.addEventListener('click', function (e) {
 const timerElement = document.getElementById('timer');
 let seconds        = 0;
 let completionTime = null;
+let hints_used     = 0;
+let bad_checks     = 0;
+let completion     = 0;
+let expected_time  = 0;
+let total_letter_cells = 0;
 
 function formatTime(sec) {
   const hrs  = Math.floor(sec / 3600);
@@ -32,6 +37,41 @@ const timerInterval = setInterval(() => {
   seconds++;
   timerElement.textContent = formatTime(seconds);
 }, 1000);
+
+function countLetterCells() {
+  let count = 0;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c] !== "") {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+function countCorrectLetters() {
+  let count = 0;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c] === "") continue;
+
+      const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
+      if (input && input.value === grid[r][c]) {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+function updateCompletion() {
+  if (total_letter_cells === 0) {
+    completion = 0;
+    return;
+  }
+  completion = countCorrectLetters() / total_letter_cells;
+}
 
 // Puzzle state
 let SIZE         = 5;
@@ -68,6 +108,10 @@ async function init() {
 
     renderBoard();
     renderClues();
+
+    total_letter_cells = countLetterCells();
+    expected_time = total_letter_cells * 8;
+    updateCompletion();
 
   } catch (err) {
     console.error('Could not load puzzle:', err);
@@ -283,9 +327,9 @@ function onInput(e, r, c) {
   const val = input.value.toUpperCase().replace(/[^A-Z]/g, "");
   input.value = val ? val[val.length - 1] : "";
 
-  checkWin();
-
   input.closest(".cell").classList.remove("correct", "incorrect");
+    updateCompletion();
+    checkWin();
 
   if (input.value) {
     const nr = selectedDir === "down" ? r + 1 : r;
@@ -343,6 +387,7 @@ function onKeyDown(e, r, c) {
 // Compare player input to the answer grid for the given scope
 function checkPuzzle(scope) {
     let cellsToCheck = [];
+    let foundWrong = false;
 
     if (scope === "square" && selectedCell) {
         cellsToCheck = [selectedCell];
@@ -364,8 +409,13 @@ function checkPuzzle(scope) {
         } else {
             cell.classList.add("incorrect");
             cell.classList.remove("correct");
+            foundWrong = true;
         }
     }
+    if (foundWrong) {
+        bad_checks++;
+    }
+    updateCompletion();
 }
 
 // Clear cell
@@ -376,6 +426,7 @@ function eraseSelected() {
     if (input) {
         input.value = "";
         input.closest(".cell").classList.remove("correct", "incorrect");
+        updateCompletion();
     }
 }
 
@@ -385,9 +436,13 @@ function revealHint() {
     const { r, c } = selectedCell;
     const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
     if (input) {
+        if (input.value !== grid[r][c]) {
+            hints_used++;
+        }
         input.value = grid[r][c];
         input.closest(".cell").classList.add("correct");
         input.closest(".cell").classList.remove("incorrect");
+        updateCompletion();
     }
 }
 
@@ -404,9 +459,6 @@ document.querySelectorAll("#checkMenu button").forEach((btn, i) => {
 document.getElementById("eraseButton").addEventListener("click", eraseSelected);
 document.getElementById("hintButton").addEventListener("click", () => { revealHint(); checkWin(); });
 
-// Render board and clues
-renderBoard();
-renderClues();
 
 // Check if every letter cell matches the answer grid
 function checkWin() {
@@ -438,7 +490,14 @@ function checkWin() {
     fetch('/game-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ time_seconds: seconds, puzzle_data: puzzleData })
+        body: JSON.stringify({
+            time_seconds: seconds,
+            expected_time: expected_time,
+            hints_used: hints_used,
+            bad_checks: bad_checks,
+            completion: completion,
+            puzzle_data: puzzleData
+        })
     })
     .catch(err => console.warn('Could not save session:', err))
     .finally(() => showWinPopup(completionTime));

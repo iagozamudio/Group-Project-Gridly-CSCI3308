@@ -36,6 +36,11 @@ CREATE TABLE IF NOT EXISTS game_sessions (
   session_id   SERIAL PRIMARY KEY,
   username     VARCHAR(50),
   time_seconds INT NOT NULL,
+  expected_time  INT,
+  hints_used     INT DEFAULT 0,
+  bad_checks     INT DEFAULT 0,
+  completion     DECIMAL(5,4) DEFAULT 0,
+  puzzle_score   DECIMAL(10,2) DEFAULT 0,
   puzzle_data  JSONB,
   completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_game_sessions_user FOREIGN KEY(username)

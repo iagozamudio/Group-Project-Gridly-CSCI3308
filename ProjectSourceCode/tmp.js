@@ -179,6 +179,14 @@ const auth = (req, res, next) => {
   next();
 };
 
+function calculatePuzzleScore(expected_time, time_seconds, completion, hints_used, bad_checks) {
+  const base = 1500;
+  const timeFactor = expected_time / time_seconds;
+  const penalty = 50 * hints_used + 10 * bad_checks;
+  const puzzleScore = base * timeFactor * completion - penalty;
+  return Math.max(0, puzzleScore);
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // ROUTES
 // ═════════════════════════════════════════════════════════════════════════════
@@ -446,19 +454,42 @@ app.post('/test-cleanup', async (req, res) => {
 
 // ── Save game session ────────────────────────────────────────────────────────
 app.post('/game-session', async (req, res) => {
-  const { time_seconds, puzzle_data } = req.body;
+  const { time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_data } = req.body;
   const username = req.session.user?.username ?? null;
 
-  if (typeof time_seconds !== 'number' || time_seconds < 0) {
-    return res.status(400).json({ message: 'Invalid time' });
+  if (
+    typeof time_seconds !== 'number' || time_seconds <= 0 ||
+    typeof expected_time !== 'number' || expected_time <= 0 ||
+    typeof hints_used !== 'number' || hints_used < 0 ||
+    typeof bad_checks !== 'number' || bad_checks < 0 ||
+    typeof completion !== 'number' || completion < 0 || completion > 1
+  ) {
+    return res.status(400).json({ message: 'Invalid game data' });
   }
 
   try {
+    const puzzle_score = calculatePuzzleScore(
+      expected_time,
+      time_seconds,
+      completion,
+      hints_used,
+      bad_checks
+    )
     const row = await db.one(
-      `INSERT INTO game_sessions (username, time_seconds, puzzle_data)
-       VALUES ($1, $2, $3)
-       RETURNING session_id, time_seconds, completed_at, puzzle_data`,
-      [username, time_seconds, puzzle_data ? JSON.stringify(puzzle_data) : null]
+      `INSERT INTO game_sessions
+       (username, time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_score, puzzle_data)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING session_id, username, time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_score, completed_at`,
+      [
+        username,
+        time_seconds,
+        expected_time,
+        hints_used,
+        bad_checks,
+        completion,
+        puzzle_score,
+        puzzle_data ? JSON.stringify(puzzle_data) : null
+      ]
     );
 
     return res.status(201).json({ message: 'Saved', session: row });
@@ -473,10 +504,14 @@ app.get('/api/leaderboard', async (req, res) => {
   try {
     const rows = await db.any(
       `SELECT COALESCE(username, 'Guest') AS username,
+              puzzle_score,
               time_seconds,
+              hints_used,
+              bad_checks,
+              completion,
               completed_at
        FROM game_sessions
-       ORDER BY time_seconds ASC
+       ORDER BY puzzle_score DESC
        LIMIT 20`
     );
 
