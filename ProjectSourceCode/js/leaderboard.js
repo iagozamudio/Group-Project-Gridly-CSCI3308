@@ -17,6 +17,10 @@ function formatDate(isoString) {
   return new Date(isoString).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+function formatScore(score) {
+  return Number(score ?? 0).toFixed(2);
+}
+
 function renderSpinner(containerId) {
   document.getElementById(containerId).innerHTML = `
     <div class="list-group-item text-center text-muted">
@@ -50,16 +54,29 @@ async function loadSinglePlayer() {
     }
 
     // Tab 1 — original score display (fastest times, same as before)
+    // Tab 1 — single-player score leaderboard
     document.getElementById('leaderboard-list').innerHTML = rows.map((row, i) => {
-      const badge = BADGE_CLASSES[i] ?? 'bg-dark';
-      return `
-        <div class="list-group-item d-flex justify-content-between align-items-center">
+    const badge = BADGE_CLASSES[i] ?? 'bg-dark';
+    const rank = i + 1;
+    const username = row.username || 'Guest';
+    const date = formatDate(row.completed_at);
+    const time = formatTime(row.time_seconds);
+    const score = formatScore(row.puzzle_score);
+    const hintsUsed = row.hints_used ?? 0;
+
+    return ` 
+      <div class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
           <span>
-            <strong>#${i + 1}</strong> ${row.username || 'Guest'}
-            <small class="text-muted ms-2">${formatDate(row.completed_at)}</small>
+            <strong>#${rank}</strong> ${username}
+            <small class="text-muted ms-2">${date}</small>
           </span>
-          <span class="badge ${badge} rounded-pill">${formatTime(row.time_seconds)}</span>
-        </div>`;
+          <div class="small text-muted">
+            Time: ${time} | Hints: ${hintsUsed}
+          </div>
+        </div>
+        <span class="badge ${badge} rounded-pill">${score}</span>
+      </div>`;
     }).join('');
 
     // Tab 2 — same data, same ordering, slightly different label emphasis
