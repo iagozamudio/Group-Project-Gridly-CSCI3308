@@ -105,6 +105,9 @@ wss.on("connection", (ws, req) => {
   });
 });
 
+console.log('POSTGRES_HOST from env:', process.env.POSTGRES_HOST);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 // ── Database ──────────────────────────────────────────────────────────────────
 const db = pgp({
   host:     process.env.POSTGRES_HOST || 'db',  // Changed this line
