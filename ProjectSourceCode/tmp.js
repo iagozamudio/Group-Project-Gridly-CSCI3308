@@ -189,6 +189,48 @@ function calculatePuzzleScore(expected_time, time_seconds, completion, hints_use
   return Math.max(0, puzzleScore);
 }
 
+// ── Get user game history (last 10 sessions) ─────────────────────────────────
+// This function retrieves the last 10 game sessions for a given user, combining both single-player and multiplayer sessions. It returns an array of session objects with details such as game type, score, time taken, completion status, and result (win/loss for multiplayer).
+
+async function getUserGameHistory(username){
+  const query = `SELECT 
+  'single' AS game_type,
+  session_id AS game_id,
+  puzzle_score AS score,
+  time_seconds,
+  completed_at,
+  completion,
+  NULL AS result
+FROM game_sessions
+WHERE username = $1
+
+UNION ALL
+
+SELECT
+  'multi' AS game_type,
+  tp_session_id AS game_id,
+  score,
+  time_seconds,
+  completed_at,
+  NULL AS completion,
+  CASE WHEN is_winner THEN 'Win' ELSE 'Loss' END AS result
+FROM two_player_sessions
+WHERE username = $1
+
+ORDER BY completed_at DESC
+LIMIT 10`;
+  
+//The try and catch block is used for nay error handling. Is it passes, we create a variable called history and assign it the value of the query result. 
+//Teh funciton shoud return a  
+    try {
+      const history = await db.any(query, [username]);
+      return history;
+    } catch (err) {
+      console.error('Error fetching game history:', err.message);
+      throw err;
+    } 
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // ROUTES
 // ═════════════════════════════════════════════════════════════════════════════
@@ -336,10 +378,29 @@ app.get('/logout', auth, (req, res) => {
   res.redirect('/login');
 });
 
-app.get('/profile', auth, (req, res) =>
-  res.render('pages/Profile', { user: req.session.user,
-    isProfile: true })
-);
+//Updated the profile route to pull the user's game history and pass it to the template for rendering. The getUserGameHistory function is called with the current user's username, and the resulting game history is included in the data passed to the Profile template. 
+//If there's an error fetching the game history, it logs the error and renders the profile page with an empty game history array to prevent the page from breaking.
+app.get('/profile', auth, async (req, res) => {
+  try {
+    const gameHistory = await getUserGameHistory(req.session.user.username);
+
+    res.render('pages/Profile', {
+      user: req.session.user,
+      isProfile: true,
+      gameHistory
+    });
+  } catch (err) {
+    console.error('Profile route error:', err.message);
+
+    res.render('pages/Profile', {
+      user: req.session.user,
+      isProfile: true,
+      gameHistory: []
+    });
+  }
+});
+
+
 
 app.get('/Settings', auth, (req, res) =>
   res.render('pages/Settings', {

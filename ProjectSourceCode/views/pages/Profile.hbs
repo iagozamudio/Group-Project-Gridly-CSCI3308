@@ -59,24 +59,46 @@
     <div class = "row p-3 mt-3">
 
         <!--Game History-->
-        <div class="col md-4 boarder-end border-secondary"> 
+        <div class="col-md-4 border-end border-secondary"> 
             <h5 class = "fs-3"> Game History</h5>
-            <div class="border boarder-secondary rounded p-3 mt-2" style="height:200px;"> </div>
+            <div class="border border-secondary rounded p-3 mt-2" style="overflow-y; auto;" > 
+              {{#if gameHistory.length}} <!-- Check if there are any games in the history -->
+
+              {{#each gameHistory}} <!-- Loop through each game in the history -->
+
+                <div class="border-bottom pb-2 mb-2">
+                  <div><strong>{{game_type}}</strong></div>
+                  <div>Score: {{score}}</div>
+                  <div>Time: {{time_seconds}} sec</div>
+                  {{#if completion}}
+                    <div>Completion: {{completion}}</div>
+                  {{/if}}
+                  {{#if result}}
+                    <div>Result: {{result}}</div>
+                  {{/if}}
+                  <div>{{completed_at}}</div>
+                </div>
+
+              {{/each}}
+
+            {{else}}
+              <p class="text-secondary mb-0">No games played yet.</p>
+            {{/if}}
+            </div>
         </div>
         <!--Stats-->
-        <div class="col md-4 boarder-end border-secondary"> 
+        <div class="col md-4 border-end border-secondary"> 
             <h5 class = "fs-3">Stats</h5>
-            <div class="border boarder-secondary rounded p-3 mt-2" style="height:200px;"> </div>
+            <div class="border border-secondary rounded p-3 mt-2" style="height:200px;"> </div>
         </div>
 
         <!--Stats-->
         <div class="col md-4"> 
             <h5 class = "fs-3">Friends List</h5>
-            <div class="border boarder-secondary rounded p-3 mt-2" style="height:200px;"> </div>
+            <div class="border border-secondary rounded p-3 mt-2" style="height:200px;"> </div>
         </div>
 
     </div>
 
   </div>
 
-{{!-- {{>footer}} --}}

@@ -71,3 +71,5 @@ CREATE INDEX IF NOT EXISTS idx_tp_sessions_game_id  ON two_player_sessions(game_
 CREATE INDEX IF NOT EXISTS idx_tp_sessions_username ON two_player_sessions(username);
 CREATE INDEX IF NOT EXISTS idx_gs_username          ON game_sessions(username);
 CREATE INDEX IF NOT EXISTS idx_gs_time              ON game_sessions(time_seconds);
+
+
