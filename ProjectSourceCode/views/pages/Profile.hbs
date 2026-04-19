@@ -60,8 +60,8 @@
 
         <!--Game History-->
         <div class="col-md-4 border-end border-secondary"> 
-            <h5 class = "fs-3"> Game History</h5>
-            <div class="border border-secondary rounded p-3 mt-2" style="overflow-y; auto;" > 
+            <h5 class = "fs-3 text-center"> 👾 Game History 👾</h5>
+            <div class="border border-secondary rounded p-3 mt-2" style="overflow-y: auto;" > 
               {{#if gameHistory.length}} <!-- Check if there are any games in the history -->
 
               {{#each gameHistory}} <!-- Loop through each game in the history -->
@@ -82,18 +82,24 @@
               {{/each}}
 
             {{else}}
-              <p class="text-secondary mb-0">No games played yet.</p>
+              <p class="text-secondary mb-0"> 🥲 No games played yet 😭.</p>
             {{/if}}
             </div>
         </div>
         <!--Stats-->
         <div class="col md-4 border-end border-secondary"> 
-            <h5 class = "fs-3">Stats</h5>
-            <div class="border border-secondary rounded p-3 mt-2" style="height:200px;"> </div>
+            <h5 class = "fs-3 text-center"> 🔥 Stats 🔥</h5>
+              <div class="border border-secondary rounded p-3 mt-2">
+                <div class="border-bottom pb-2 mb-2">Total Games Played: {{stats.totalGames}}</div>
+                <div class="border-bottom pb-2 mb-2">Best Single Score: {{stats.bestSingleScore}}</div>
+                <div class="border-bottom pb-2 mb-2">Average Completion: {{stats.avgCompletion}}%</div>
+                <div class="border-bottom pb-2 mb-2">Wins: {{stats.wins}}</div>
+                <div>Win Rate: {{stats.winRate}}%</div>
+              </div>
         </div>
 
         <!--Stats-->
-        <div class="col md-4"> 
+        <div class="col-md-4"> 
             <h5 class = "fs-3">Friends List</h5>
             <div class="border border-secondary rounded p-3 mt-2" style="height:200px;"> </div>
         </div>

@@ -229,7 +229,55 @@ LIMIT 10`;
       console.error('Error fetching game history:', err.message);
       throw err;
     } 
+}; 
+
+
+//COALESCE is a SQL function that returns the first non-NULL value.
+// ── Get user stats ─────────────────────────────────
+async function getUserStats(username) {
+  const singlePlayerQuery = `
+    SELECT
+      COUNT(*) AS num_of_single_games,
+      COALESCE(MAX(puzzle_score), 0) AS best_single_score,
+      COALESCE(AVG(completion), 0) AS avg_completion
+    FROM game_sessions
+    WHERE username = $1
+  `;
+
+  const multiPlayerQuery = `
+    SELECT
+      COUNT(*) AS num_of_multi_games,
+      COALESCE(SUM(CASE WHEN is_winner THEN 1 ELSE 0 END), 0) AS num_wins
+    FROM two_player_sessions
+    WHERE username = $1
+  `;
+
+  try {
+    const singlePlayerStats = await db.one(singlePlayerQuery, [username]);
+    const multiPlayerStats = await db.one(multiPlayerQuery, [username]);
+
+    const totalGames =
+      Number(singlePlayerStats.num_of_single_games) +
+      Number(multiPlayerStats.num_of_multi_games);
+
+    const wins = Number(multiPlayerStats.num_wins);
+    const multiGames = Number(multiPlayerStats.num_of_multi_games);
+    const winRate = multiGames > 0 ? ((wins / multiGames) * 100).toFixed(1) : "0.0";
+    const avgCompletion = (Number(singlePlayerStats.avg_completion) * 100).toFixed(1);
+
+    return {
+      totalGames,
+      bestSingleScore: Number(singlePlayerStats.best_single_score).toFixed(0),
+      avgCompletion,
+      wins,
+      winRate
+    };
+  } catch (err) {
+    console.error('Error fetching user stats:', err.message);
+    throw err;
+  }
 }
+
 
 // ═════════════════════════════════════════════════════════════════════════════
 // ROUTES
@@ -382,12 +430,15 @@ app.get('/logout', auth, (req, res) => {
 //If there's an error fetching the game history, it logs the error and renders the profile page with an empty game history array to prevent the page from breaking.
 app.get('/profile', auth, async (req, res) => {
   try {
-    const gameHistory = await getUserGameHistory(req.session.user.username);
+    const username = req.session.user.username;
+    const gameHistory = await getUserGameHistory(username);
+    const stats = await getUserStats(username);
 
     res.render('pages/Profile', {
       user: req.session.user,
       isProfile: true,
-      gameHistory
+      gameHistory,
+      stats
     });
   } catch (err) {
     console.error('Profile route error:', err.message);
@@ -395,10 +446,18 @@ app.get('/profile', auth, async (req, res) => {
     res.render('pages/Profile', {
       user: req.session.user,
       isProfile: true,
-      gameHistory: []
+      gameHistory: [],
+      stats: {
+        totalGames: 0,
+        bestSingleScore: 0,
+        avgCompletion: "0.0",
+        wins: 0,
+        winRate: "0.0"
+      }
     });
   }
 });
+
 
 
 
