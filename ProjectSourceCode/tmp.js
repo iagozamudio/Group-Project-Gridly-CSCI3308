@@ -198,7 +198,7 @@ app.get('/welcome', (req, res) => {
   res.json({ status: 'success', message: 'Welcome!' });
 });
 
-app.get('/', (req, res) => res.redirect('/login'));
+app.get('/', (req, res) => res.redirect('pages/login'));
 
 // ── Page renders ─────────────────────────────────────────────────────────────
 app.get('/login', (req, res) => res.render('pages/login'));
