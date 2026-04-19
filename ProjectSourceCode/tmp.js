@@ -189,6 +189,153 @@ function calculatePuzzleScore(expected_time, time_seconds, completion, hints_use
   return Math.max(0, puzzleScore);
 }
 
+// ── Get user game history (last 10 sessions) ─────────────────────────────────
+// This function retrieves the last 10 game sessions for a given user, combining both single-player and multiplayer sessions. It returns an array of session objects with details such as game type, score, time taken, completion status, and result (win/loss for multiplayer).
+
+async function getUserGameHistory(username){
+  const query = `SELECT 
+  'single' AS game_type,
+  session_id AS game_id,
+  puzzle_score AS score,
+  time_seconds,
+  completed_at,
+  completion,
+  NULL AS result
+FROM game_sessions
+WHERE username = $1
+
+UNION ALL
+
+SELECT
+  'multi' AS game_type,
+  tp_session_id AS game_id,
+  score,
+  time_seconds,
+  completed_at,
+  NULL AS completion,
+  CASE WHEN is_winner THEN 'Win' ELSE 'Loss' END AS result
+FROM two_player_sessions
+WHERE username = $1
+
+ORDER BY completed_at DESC
+LIMIT 10`;
+  
+//The try and catch block is used for nay error handling. Is it passes, we create a variable called history and assign it the value of the query result. 
+//Teh funciton shoud return a  
+    try {
+      const history = await db.any(query, [username]);
+      return history;
+    } catch (err) {
+      console.error('Error fetching game history:', err.message);
+      throw err;
+    } 
+}; 
+
+
+//COALESCE is a SQL function that returns the first non-NULL value.
+// ── Get user stats ─────────────────────────────────
+async function getUserStats(username) {
+  const singlePlayerQuery = `
+    SELECT
+      COUNT(*) AS num_of_single_games,
+      COALESCE(MAX(puzzle_score), 0) AS best_single_score,
+      COALESCE(AVG(completion), 0) AS avg_completion,
+      COALESCE(SUM(puzzle_score), 0) AS total_points
+    FROM game_sessions
+    WHERE username = $1
+  `;
+
+  const multiPlayerQuery = `
+    SELECT
+      COUNT(*) AS num_of_multi_games,
+      COALESCE(SUM(CASE WHEN is_winner THEN 1 ELSE 0 END), 0) AS num_wins
+    FROM two_player_sessions
+    WHERE username = $1
+  `;
+
+  try {
+    const singlePlayerStats = await db.one(singlePlayerQuery, [username]);
+    const multiPlayerStats = await db.one(multiPlayerQuery, [username]);
+
+    const totalGames =
+      Number(singlePlayerStats.num_of_single_games) +
+      Number(multiPlayerStats.num_of_multi_games);
+
+    const wins = Number(multiPlayerStats.num_wins);
+    const multiGames = Number(multiPlayerStats.num_of_multi_games);
+    const winRate = multiGames > 0 ? ((wins / multiGames) * 100).toFixed(1) : "0.0";
+    const avgCompletion = (Number(singlePlayerStats.avg_completion) * 100).toFixed(1);
+    const totalScore = Number(singlePlayerStats.total_points).toFixed(0);
+
+    return {
+      totalGames,
+      bestSingleScore: Number(singlePlayerStats.best_single_score).toFixed(0),
+      avgCompletion,
+      wins,
+      winRate,
+      totalScore
+    };
+  } catch (err) {
+    console.error('Error fetching user stats:', err.message);
+    throw err;
+  }
+}
+
+// ── Get user player rankings ─────────────────────────────────
+async function getUserRankings(username) {
+  const SingleScoreRankQuery = `
+  SELECT rank FROM (
+    SELECT
+      username, 
+      DENSE_RANK() OVER (ORDER BY MAX(puzzle_score) DESC) AS rank
+      FROM game_sessions
+      WHERE username IS NOT NULL
+      GROUP BY username
+      )ranked 
+      WHERE username = $1 `; 
+
+    const fastestTimeQuery = `
+    SELECT rank FROM (
+      SELECT
+        username, 
+        DENSE_RANK() OVER (ORDER BY MAX(time_seconds) ASC) AS rank
+        FROM game_sessions
+        WHERE username IS NOT NULL
+        GROUP BY username
+        )ranked 
+        WHERE username = $1
+    `; 
+
+    const twoPlayerRankQuery = `
+    SELECT rank
+    FROM (
+      SELECT
+        username,
+        DENSE_RANK() OVER (ORDER BY SUM(score) DESC) AS rank
+      FROM two_player_sessions
+      WHERE username IS NOT NULL
+      GROUP BY username
+    ) ranked
+    WHERE username = $1
+  `;
+
+  try{
+    const singleScoreRank = await db.oneOrNone(SingleScoreRankQuery, [username]);
+    const fastestTimeRank = await db.oneOrNone(fastestTimeQuery, [username]);
+    const twoPlayerRank = await db.oneOrNone(twoPlayerRankQuery, [username]);
+
+    return {
+      singleScoreRank: singleScoreRank ? singleScoreRank.rank : null,
+      fastestTimeRank: fastestTimeRank ? fastestTimeRank.rank : null,
+      twoPlayerRank: twoPlayerRank ? twoPlayerRank.rank : null
+    }; 
+  }
+  catch (err){
+    console.error('Error fetching user rankings:', err.message);
+    throw err;
+  }
+}; 
+
 // ═════════════════════════════════════════════════════════════════════════════
 // ROUTES
 // ═════════════════════════════════════════════════════════════════════════════
@@ -336,10 +483,48 @@ app.get('/logout', auth, (req, res) => {
   res.redirect('/login');
 });
 
-app.get('/profile', auth, (req, res) =>
-  res.render('pages/Profile', { user: req.session.user,
-    isProfile: true })
-);
+//Updated the profile route to pull the user's game history and pass it to the template for rendering. The getUserGameHistory function is called with the current user's username, and the resulting game history is included in the data passed to the Profile template. 
+//If there's an error fetching the game history, it logs the error and renders the profile page with an empty game history array to prevent the page from breaking.
+app.get('/profile', auth, async (req, res) => {
+  try {
+    const username = req.session.user.username;
+    const gameHistory = await getUserGameHistory(username);
+    const stats = await getUserStats(username);
+    const ranks = await getUserRankings(username);
+
+    res.render('pages/Profile', {
+      user: req.session.user,
+      isProfile: true,
+      gameHistory,
+      stats,
+      ranks
+    });
+  } catch (err) {
+    console.error('Profile route error:', err.message);
+
+    res.render('pages/Profile', {
+      user: req.session.user,
+      isProfile: true,
+      gameHistory: [],
+      stats: {
+        totalGames: 0,
+        bestSingleScore: 0,
+        avgCompletion: "0.0",
+        wins: 0,
+        winRate: "0.0", 
+        totalScore: 0
+      }, 
+      ranks: {
+        singleScoreRank: 'N/A',
+        fastestTimeRank: 'N/A',
+        twoPlayerRank: 'N/A'
+      }
+    });
+  }
+});
+
+
+
 
 app.get('/Settings', auth, (req, res) =>
   res.render('pages/Settings', {
