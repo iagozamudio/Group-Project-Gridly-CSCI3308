@@ -239,7 +239,8 @@ async function getUserStats(username) {
     SELECT
       COUNT(*) AS num_of_single_games,
       COALESCE(MAX(puzzle_score), 0) AS best_single_score,
-      COALESCE(AVG(completion), 0) AS avg_completion
+      COALESCE(AVG(completion), 0) AS avg_completion,
+      COALESCE(SUM(puzzle_score), 0) AS total_points
     FROM game_sessions
     WHERE username = $1
   `;
@@ -264,13 +265,15 @@ async function getUserStats(username) {
     const multiGames = Number(multiPlayerStats.num_of_multi_games);
     const winRate = multiGames > 0 ? ((wins / multiGames) * 100).toFixed(1) : "0.0";
     const avgCompletion = (Number(singlePlayerStats.avg_completion) * 100).toFixed(1);
+    const totalScore = Number(singlePlayerStats.total_points).toFixed(0);
 
     return {
       totalGames,
       bestSingleScore: Number(singlePlayerStats.best_single_score).toFixed(0),
       avgCompletion,
       wins,
-      winRate
+      winRate,
+      totalScore
     };
   } catch (err) {
     console.error('Error fetching user stats:', err.message);
@@ -278,6 +281,60 @@ async function getUserStats(username) {
   }
 }
 
+// ── Get user player rankings ─────────────────────────────────
+async function getUserRankings(username) {
+  const SingleScoreRankQuery = `
+  SELECT rank FROM (
+    SELECT
+      username, 
+      DENSE_RANK() OVER (ORDER BY MAX(puzzle_score) DESC) AS rank
+      FROM game_sessions
+      WHERE username IS NOT NULL
+      GROUP BY username
+      )ranked 
+      WHERE username = $1 `; 
+
+    const fastestTimeQuery = `
+    SELECT rank FROM (
+      SELECT
+        username, 
+        DENSE_RANK() OVER (ORDER BY MAX(time_seconds) ASC) AS rank
+        FROM game_sessions
+        WHERE username IS NOT NULL
+        GROUP BY username
+        )ranked 
+        WHERE username = $1
+    `; 
+
+    const twoPlayerRankQuery = `
+    SELECT rank
+    FROM (
+      SELECT
+        username,
+        DENSE_RANK() OVER (ORDER BY SUM(score) DESC) AS rank
+      FROM two_player_sessions
+      WHERE username IS NOT NULL
+      GROUP BY username
+    ) ranked
+    WHERE username = $1
+  `;
+
+  try{
+    const singleScoreRank = await db.oneOrNone(SingleScoreRankQuery, [username]);
+    const fastestTimeRank = await db.oneOrNone(fastestTimeQuery, [username]);
+    const twoPlayerRank = await db.oneOrNone(twoPlayerRankQuery, [username]);
+
+    return {
+      singleScoreRank: singleScoreRank ? singleScoreRank.rank : null,
+      fastestTimeRank: fastestTimeRank ? fastestTimeRank.rank : null,
+      twoPlayerRank: twoPlayerRank ? twoPlayerRank.rank : null
+    }; 
+  }
+  catch (err){
+    console.error('Error fetching user rankings:', err.message);
+    throw err;
+  }
+}; 
 
 // ═════════════════════════════════════════════════════════════════════════════
 // ROUTES
@@ -433,12 +490,14 @@ app.get('/profile', auth, async (req, res) => {
     const username = req.session.user.username;
     const gameHistory = await getUserGameHistory(username);
     const stats = await getUserStats(username);
+    const ranks = await getUserRankings(username);
 
     res.render('pages/Profile', {
       user: req.session.user,
       isProfile: true,
       gameHistory,
-      stats
+      stats,
+      ranks
     });
   } catch (err) {
     console.error('Profile route error:', err.message);
@@ -452,7 +511,13 @@ app.get('/profile', auth, async (req, res) => {
         bestSingleScore: 0,
         avgCompletion: "0.0",
         wins: 0,
-        winRate: "0.0"
+        winRate: "0.0", 
+        totalScore: 0
+      }, 
+      ranks: {
+        singleScoreRank: 'N/A',
+        fastestTimeRank: 'N/A',
+        twoPlayerRank: 'N/A'
       }
     });
   }
