@@ -189,6 +189,35 @@ function calculatePuzzleScore(expected_time, time_seconds, completion, hints_use
   return Math.max(0, puzzleScore);
 }
 
+function determineWinner(playerOneScore, playerTwoScore, playerOneTime, playerTwoTime) {
+  if (playerOneScore > playerTwoScore) return 1;
+  if (playerTwoScore > playerOneScore) return 2;
+  if (playerOneTime < playerTwoTime) return 1;
+  if (playerTwoTime < playerOneTime) return 2;
+  return 0;
+}
+
+function calculateRatingDelta(playerRating, opponentRating, playerScore, opponentScore, didWin) {
+  const scoreDiff = Math.abs(playerScore - opponentScore);
+  let delta = Math.max(10, Math.round(scoreDiff * 0.1));
+
+  if (didWin && playerRating < opponentRating) {
+    delta += Math.round((opponentRating - playerRating) * 0.05);
+  }
+
+  if (!didWin && playerRating > opponentRating) {
+    delta += Math.round((playerRating - opponentRating) * 0.05);
+  }
+  return delta;
+}
+
+async function getPlayerRating(username) {
+  const row = await db.one(
+    'SELECT player_rating FROM users WHERE username = $1',
+    [username]
+  );
+  return row.player_rating;
+}
 // ── Get user game history (last 10 sessions) ─────────────────────────────────
 // This function retrieves the last 10 game sessions for a given user, combining both single-player and multiplayer sessions. It returns an array of session objects with details such as game type, score, time taken, completion status, and result (win/loss for multiplayer).
 
@@ -209,10 +238,10 @@ UNION ALL
 SELECT
   'multi' AS game_type,
   tp_session_id AS game_id,
-  score,
+  puzzle_score AS score,
   time_seconds,
   completed_at,
-  NULL AS completion,
+  completion,
   CASE WHEN is_winner THEN 'Win' ELSE 'Loss' END AS result
 FROM two_player_sessions
 WHERE username = $1
@@ -253,9 +282,16 @@ async function getUserStats(username) {
     WHERE username = $1
   `;
 
+  const ratingQuery = `
+    SELECT player_rating
+    FROM users
+    WHERE username = $1
+  `;
+
   try {
     const singlePlayerStats = await db.one(singlePlayerQuery, [username]);
     const multiPlayerStats = await db.one(multiPlayerQuery, [username]);
+    const ratingRow = await db.one(ratingQuery, [username]);
 
     const totalGames =
       Number(singlePlayerStats.num_of_single_games) +
@@ -273,7 +309,8 @@ async function getUserStats(username) {
       avgCompletion,
       wins,
       winRate,
-      totalScore
+      totalScore,
+      playerRating: Number(ratingRow.player_rating)
     };
   } catch (err) {
     console.error('Error fetching user stats:', err.message);
@@ -311,10 +348,9 @@ async function getUserRankings(username) {
     FROM (
       SELECT
         username,
-        DENSE_RANK() OVER (ORDER BY SUM(score) DESC) AS rank
-      FROM two_player_sessions
+        DENSE_RANK() OVER (ORDER BY player_rating DESC) AS rank
+      FROM users
       WHERE username IS NOT NULL
-      GROUP BY username
     ) ranked
     WHERE username = $1
   `;
@@ -573,8 +609,6 @@ app.get('/profile', auth, async (req, res) => {
     });
   }
 });
-
-
 
 
 app.get('/Settings', auth, (req, res) =>
@@ -1881,13 +1915,16 @@ app.get('/api/puzzle', (req, res) => {
 app.get('/api/leaderboard/twoplayer', async (req, res) => {
   try {
     const rows = await db.any(
-      `SELECT COALESCE(username, 'Guest') AS username,
-              SUM(score)                  AS total_score,
-              COUNT(*)                    AS games_played,
-              SUM(CASE WHEN is_winner THEN 1 ELSE 0 END) AS wins
-       FROM two_player_sessions
-       GROUP BY username
-       ORDER BY total_score DESC
+      `SELECT
+         u.username,
+         u.player_rating,
+         COUNT(t.tp_session_id) AS games_played,
+         COALESCE(SUM(CASE WHEN t.is_winner THEN 1 ELSE 0 END), 0) AS wins
+       FROM users u
+       LEFT JOIN two_player_sessions t
+         ON u.username = t.username
+       GROUP BY u.username, u.player_rating
+       ORDER BY u.player_rating DESC, wins DESC
        LIMIT 20`
     );
     return res.json(rows);
@@ -1901,23 +1938,167 @@ app.get('/api/leaderboard/twoplayer', async (req, res) => {
 // Body: { game_id, time_seconds, is_winner }
 // The score formula: MAX(0, 1000 - time_seconds) + (is_winner ? 200 : 0)
 app.post('/two-player-session', auth, async (req, res) => {
-  const { game_id, time_seconds, is_winner } = req.body;
-  const username = req.session.user?.username ?? null;
+  const {
+    game_id,
+    player_one,
+    player_two
+  } = req.body;
 
-  if (!game_id || typeof time_seconds !== 'number' || time_seconds < 0) {
+  if (
+    !game_id ||
+    !player_one ||
+    !player_two ||
+    typeof player_one.username !== 'string' ||
+    typeof player_two.username !== 'string' ||
+    typeof player_one.time_seconds !== 'number' || player_one.time_seconds <= 0 ||
+    typeof player_two.time_seconds !== 'number' || player_two.time_seconds <= 0 ||
+    typeof player_one.expected_time !== 'number' || player_one.expected_time <= 0 ||
+    typeof player_two.expected_time !== 'number' || player_two.expected_time <= 0 ||
+    typeof player_one.hints_used !== 'number' || player_one.hints_used < 0 ||
+    typeof player_two.hints_used !== 'number' || player_two.hints_used < 0 ||
+    typeof player_one.bad_checks !== 'number' || player_one.bad_checks < 0 ||
+    typeof player_two.bad_checks !== 'number' || player_two.bad_checks < 0 ||
+    typeof player_one.completion !== 'number' || player_one.completion < 0 || player_one.completion > 1 ||
+    typeof player_two.completion !== 'number' || player_two.completion < 0 || player_two.completion > 1
+  ) {
     return res.status(400).json({ message: 'Invalid input' });
   }
 
-  const score = Math.max(0, 1000 - time_seconds) + (is_winner ? 200 : 0);
-
   try {
-    const row = await db.one(
-      `INSERT INTO two_player_sessions (game_id, username, time_seconds, is_winner, score)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING tp_session_id, score, completed_at`,
-      [game_id, username, time_seconds, !!is_winner, score]
+    const playerOneScore = calculatePuzzleScore(
+      player_one.expected_time,
+      player_one.time_seconds,
+      player_one.completion,
+      player_one.hints_used,
+      player_one.bad_checks
     );
-    return res.status(201).json({ message: 'Saved', session: row });
+
+    const playerTwoScore = calculatePuzzleScore(
+      player_two.expected_time,
+      player_two.time_seconds,
+      player_two.completion,
+      player_two.hints_used,
+      player_two.bad_checks
+    );
+
+    const winner = determineWinner(
+      playerOneScore,
+      playerTwoScore,
+      player_one.time_seconds,
+      player_two.time_seconds
+    );
+
+    const playerOneWon = winner === 1;
+    const playerTwoWon = winner === 2;
+
+    const playerOneRatingBefore = await getPlayerRating(player_one.username);
+    const playerTwoRatingBefore = await getPlayerRating(player_two.username);
+
+    let playerOneRatingAfter = playerOneRatingBefore;
+    let playerTwoRatingAfter = playerTwoRatingBefore;
+
+    if (winner !== 0) {
+      const playerOneDelta = calculateRatingDelta(
+        playerOneRatingBefore,
+        playerTwoRatingBefore,
+        playerOneScore,
+        playerTwoScore,
+        playerOneWon
+      );
+
+      const playerTwoDelta = calculateRatingDelta(
+        playerTwoRatingBefore,
+        playerOneRatingBefore,
+        playerTwoScore,
+        playerOneScore,
+        playerTwoWon
+      );
+
+      playerOneRatingAfter = playerOneWon
+        ? playerOneRatingBefore + playerOneDelta
+        : playerOneRatingBefore - playerOneDelta;
+
+      playerTwoRatingAfter = playerTwoWon
+        ? playerTwoRatingBefore + playerTwoDelta
+        : playerTwoRatingBefore - playerTwoDelta;
+    }
+
+    await db.tx(async t => {
+      await t.none(
+        `UPDATE users
+         SET player_rating = $1
+         WHERE username = $2`,
+        [playerOneRatingAfter, player_one.username]
+      );
+
+      await t.none(
+        `UPDATE users
+         SET player_rating = $1
+         WHERE username = $2`,
+        [playerTwoRatingAfter, player_two.username]
+      );
+
+      await t.none(
+        `INSERT INTO two_player_sessions
+         (game_id, username, time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_score, is_winner, rating_before, rating_after)
+         VALUES
+         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          game_id,
+          player_one.username,
+          player_one.time_seconds,
+          player_one.expected_time,
+          player_one.hints_used,
+          player_one.bad_checks,
+          player_one.completion,
+          playerOneScore,
+          playerOneWon,
+          playerOneRatingBefore,
+          playerOneRatingAfter
+        ]
+      );
+
+      await t.none(
+        `INSERT INTO two_player_sessions
+         (game_id, username, time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_score, is_winner, rating_before, rating_after)
+         VALUES
+         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          game_id,
+          player_two.username,
+          player_two.time_seconds,
+          player_two.expected_time,
+          player_two.hints_used,
+          player_two.bad_checks,
+          player_two.completion,
+          playerTwoScore,
+          playerTwoWon,
+          playerTwoRatingBefore,
+          playerTwoRatingAfter
+        ]
+      );
+    });
+
+    return res.status(201).json({
+      message: 'Saved',
+      result: {
+        winner,
+        player_one: {
+          username: player_one.username,
+          puzzle_score: playerOneScore,
+          is_winner: playerOneWon,
+          rating_before: playerOneRatingBefore,
+          rating_after: playerOneRatingAfter
+        },
+        player_two: {
+          username: player_two.username,
+          puzzle_score: playerTwoScore,
+          is_winner: playerTwoWon,
+          rating_before: playerTwoRatingBefore,
+          rating_after: playerTwoRatingAfter
+        }
+      }
+    });
   } catch (err) {
     console.error('Save 2P session error:', err.message);
     return res.status(500).json({ message: 'Server error' });

@@ -2,7 +2,8 @@
 -- ================= USERS TABLE =================
 CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(50) PRIMARY KEY,
-  password VARCHAR(255) NOT NULL
+  password VARCHAR(255) NOT NULL,
+  player_rating INT NOT NULL DEFAULT 1000
 );
 
 -- Profile image column (optional with default)
@@ -63,8 +64,14 @@ CREATE TABLE IF NOT EXISTS two_player_sessions (
   game_id       VARCHAR(64) NOT NULL,
   username      VARCHAR(50),
   time_seconds  INT NOT NULL,
+  expected_time INT NOT NULL,
+  hints_used INT NOT NULL DEFAULT 0,
+  bad_checks INT NOT NULL DEFAULT 0,
+  completion DECIMAL(5,4) NOT NULL DEFAULT 0,
+  puzzle_score DECIMAL(10,2) NOT NULL DEFAULT 0,
   is_winner     BOOLEAN NOT NULL DEFAULT FALSE,
-  score         INT NOT NULL,
+  rating_before INT NOT NULL,
+  rating_after INT NOT NULL,
   completed_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_two_player_sessions_user FOREIGN KEY(username)
     REFERENCES users(username)
