@@ -298,7 +298,7 @@ async function getUserRankings(username) {
     SELECT rank FROM (
       SELECT
         username, 
-        DENSE_RANK() OVER (ORDER BY MAX(time_seconds) ASC) AS rank
+        DENSE_RANK() OVER (ORDER BY MIN(time_seconds) ASC) AS rank
         FROM game_sessions
         WHERE username IS NOT NULL
         GROUP BY username
@@ -375,7 +375,7 @@ app.get('/singleplayer', auth, (req, res) =>
 //     • missing username or password (catches empty-string '')
 //     • duplicate username already in DB
 app.post('/register', async (req, res) => {
-  const { username, password, securityQuestion, securityAnswer } = req.body;
+  const { displayName, username, password, securityQuestion, securityAnswer } = req.body;
 
   if (!username || !password) {
     if (wantsJson(req)) return res.status(400).json({ message: 'Invalid input' });
@@ -394,10 +394,11 @@ app.post('/register', async (req, res) => {
     }
 
     const hash = await bcrypt.hash(password, 10);
+    const finalDisplayName = displayName?.trim() || username;
 
     await db.none(
-      'INSERT INTO users (username, password) VALUES ($1, $2)',
-      [username, hash]
+      'INSERT INTO users (username, password, display_name) VALUES ($1, $2, $3)',
+      [username, hash, finalDisplayName]
     );
 
     if (!wantsJson(req) && securityQuestion && securityAnswer) {
@@ -409,13 +410,13 @@ app.post('/register', async (req, res) => {
 
     if (wantsJson(req)) return res.status(200).json({ message: 'Success' });
     return res.redirect('/login');
-
   } catch (err) {
     console.error('Registration error:', err.message);
     if (wantsJson(req)) return res.status(500).json({ message: 'Server error' });
     return res.redirect('/register');
   }
 });
+
 
 // ── POST /login ──────────────────────────────────────────────────────────────
 app.post('/login', async (req, res) => {
@@ -471,6 +472,7 @@ app.post('/login', async (req, res) => {
     return res.redirect('/login');
   }
 });
+
 
 // ── Authenticated pages ──────────────────────────────────────────────────────
 app.get('/home', auth, (req, res) =>
@@ -767,6 +769,31 @@ app.post('/update-username', auth, async (req, res) => {
     return res.redirect('/Settings');
   }
 });
+
+// ── Update Display Name ─────────────────────────────────────────────────────────────
+app.post('/update-display-name', auth, async (req, res) => {
+  const username = req.session.user.username;
+  const newDisplayName = req.body.newDisplayName?.trim();
+
+  if (!newDisplayName) {
+    return res.redirect('/Settings');
+  }
+
+  try {
+    await db.none(
+      'UPDATE users SET display_name = $1 WHERE username = $2',
+      [newDisplayName, username]
+    );
+
+    req.session.user.display_name = newDisplayName;
+
+    return res.redirect('/Settings');
+  } catch (err) {
+    console.error('Update display name error:', err.message);
+    return res.redirect('/Settings');
+  }
+});
+
 // ── Export server ─────────────────────────────────────────────────────────────
 // ── GET /api/game-session/:id  (retrieve a saved puzzle by session ID) ────────
 app.get('/api/game-session/:id', auth, async (req, res) => {

@@ -12,6 +12,12 @@
       {{> message}}
 
       <form action="/register" method="POST">
+
+      <div class="mb-3">
+        <input type="text" id="displayName" name="displayName"
+              class="form-control" placeholder="Display Name" required>
+        <label for="displayName" class="form-label mt-1">Display Name</label>
+      </div>
         <div class="mb-3">
           <input type="text" id="username" name="username"
                  class="form-control" placeholder="Username" required>
