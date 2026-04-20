@@ -1,16 +1,19 @@
 <link rel="stylesheet" href="../../css/chat.css">
-<script src="../../js/chat.js"></script>
-<div class="error-container" id="errorContainer">
-    <!--errors (hopefully don't) fill this -->
-</div>
-<div class="chat-container">
-    <ul class="chat" id="chatbox">
-        <!-- messages fill this -->
-        
-    </ul>
+<script src="../../js/chat.js" defer></script>
+
+<div class="error-container" id="errorContainer"></div>
+
+<button id="chatToggleBtn" class="chat-toggle-btn">💬</button>
+
+<div class="chat-container" id="chatContainer">
+
+    <button id="closeChatBtn" class="close-chat">✖</button>
+
+    <ul class="chat" id="chatbox"></ul>
 
     <form id="sendMessageForm" class="chat-form">
         <input type="text" name="message" id="textbox" placeholder="Type a message...">
         <button type="submit">Send</button>
     </form>
+
 </div>
