@@ -86,3 +86,17 @@
 .error-container div button:hover{
     cursor: pointer;
 }
+
+.chat-toggle-btn {
+    position: fixed;
+    right: 10px;   /* 👈 move to right */
+    bottom: 20px;  /* 👈 stick near bottom */
+    
+    z-index: 1100;
+    
+    padding: 10px 14px;
+    font-size: 20px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+}
