@@ -546,7 +546,7 @@ app.post('/test-cleanup', async (req, res) => {
 
 // ── Save game session ────────────────────────────────────────────────────────
 app.post('/game-session', async (req, res) => {
-  const { time_seconds, puzzle_data } = req.body;
+  const { time_seconds, puzzle_data, score } = req.body;
   const username = req.session.user?.username ?? null; // null = guest
 
   if (typeof time_seconds !== 'number' || time_seconds < 0) {
@@ -555,9 +555,9 @@ app.post('/game-session', async (req, res) => {
 
   try {
     const row = await db.one(
-      `INSERT INTO game_sessions (username, time_seconds, puzzle_data)
-       VALUES ($1, $2, $3)
-       RETURNING session_id, time_seconds, completed_at, puzzle_data`,
+      `INSERT INTO game_sessions (username, time_seconds, puzzle_data, score)
+       VALUES ($1, $2, $3, $4)
+       RETURNING session_id, time_seconds, completed_at, puzzle_data, score`,
       [username, time_seconds, puzzle_data ? JSON.stringify(puzzle_data) : null]
     );
 
@@ -573,10 +573,11 @@ app.get('/api/leaderboard', async (req, res) => {
   try {
     const rows = await db.any(
       `SELECT COALESCE(username, 'Guest') AS username,
+              score,
               time_seconds,
               completed_at
        FROM game_sessions
-       ORDER BY time_seconds ASC
+       ORDER BY score DESC
        LIMIT 20`
     );
 

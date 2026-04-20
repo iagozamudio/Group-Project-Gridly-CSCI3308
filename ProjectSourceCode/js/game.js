@@ -18,6 +18,13 @@ document.addEventListener('click', function (e) {
 const timerElement = document.getElementById('timer');
 let seconds        = 0;
 let completionTime = null;
+const expected_time = 90;
+const gameStats = {
+  hints: 0,
+  badChecks: 0,
+  score: 0
+};
+let gameFinished = false;
 
 function formatTime(sec) {
   const hrs  = Math.floor(sec / 3600);
@@ -28,9 +35,48 @@ function formatTime(sec) {
          String(secs).padStart(2,'0');
 }
 
+function calculatePuzzleScore(expected_time, time_seconds, completion, hints_used, bad_checks) {
+  const base = 1500;
+  const timeFactor = expected_time / Math.max(1, time_seconds);
+  const penalty = 50 * hints_used + 10 * bad_checks;
+  const puzzleScore = base * timeFactor * completion - penalty;
+  return Math.max(0, Math.floor(puzzleScore));
+}
+
+function computeCompletion() {
+  let total = 0;
+  let correct = 0;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c] === "") continue;
+      total++;
+      const input = document.querySelector(`.cell-input[data-r="${r}"][data-c="${c}"]`);
+      if (input && input.value === grid[r][c]) {
+        correct++;
+      }
+    }
+  }
+  if (total === 0) return 0;
+  return correct / total;
+}
+function refreshScore() {
+  const completion = computeCompletion();
+
+  gameStats.score = calculatePuzzleScore(
+    expected_time,
+    seconds,
+    completion,
+    gameStats.hints,
+    gameStats.badChecks
+  );
+
+  return gameStats.score;
+}
+
 const timerInterval = setInterval(() => {
   seconds++;
   timerElement.textContent = formatTime(seconds);
+  refreshScore();
 }, 1000);
 
 // Puzzle state
@@ -66,6 +112,7 @@ async function init() {
 
     renderBoard();
     renderClues();
+    refreshScore();
 
   } catch (err) {
     console.error('Could not load puzzle:', err);
@@ -281,9 +328,9 @@ function onInput(e, r, c) {
   const val = input.value.toUpperCase().replace(/[^A-Z]/g, "");
   input.value = val ? val[val.length - 1] : "";
 
-  checkWin();
-
   input.closest(".cell").classList.remove("correct", "incorrect");
+  refreshScore();
+  checkWin();
 
   if (input.value) {
     const nr = selectedDir === "down" ? r + 1 : r;
@@ -362,8 +409,10 @@ function checkPuzzle(scope) {
         } else {
             cell.classList.add("incorrect");
             cell.classList.remove("correct");
+            gameStats.badChecks++;
         }
     }
+    refreshScore();
 }
 
 // Clear cell
@@ -374,6 +423,7 @@ function eraseSelected() {
     if (input) {
         input.value = "";
         input.closest(".cell").classList.remove("correct", "incorrect");
+        refreshScore();
     }
 }
 
@@ -386,6 +436,8 @@ function revealHint() {
         input.value = grid[r][c];
         input.closest(".cell").classList.add("correct");
         input.closest(".cell").classList.remove("incorrect");
+        gameStats.hints++;
+        refreshScore();
     }
 }
 
@@ -418,6 +470,7 @@ function checkWin() {
 
     clearInterval(timerInterval);
     completionTime = formatTime(seconds);
+    refreshScore();
 
     // Serialize the randomly generated puzzle so it can be saved to the DB
     const puzzleData = {
@@ -436,14 +489,14 @@ function checkWin() {
     fetch('/game-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ time_seconds: seconds, puzzle_data: puzzleData })
+      body: JSON.stringify({ time_seconds: seconds, puzzle_data: puzzleData, score: gameStats.score})
     })
     .catch(err => console.warn('Could not save session:', err))
-    .finally(() => showWinPopup(completionTime));
+    .finally(() => showWinPopup(completionTime, gameStats.score));
 }
 
 // Show the win popup
-function showWinPopup(time) {
+function showWinPopup(time, score) {
     const overlay = document.createElement("div");
     overlay.id = "win-overlay";
     overlay.style.cssText = `
@@ -469,8 +522,9 @@ function showWinPopup(time) {
 
     popup.innerHTML = `
         <h2 style="margin: 0 0 8px; font-size: 2rem; letter-spacing: 2px;">YOU WIN!</h2>
-        <p style="margin: 0 0 24px; font-size: 1rem; opacity: 0.7;">Puzzle complete</p>
-        <div style="font-size: 2.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 32px;">${time}</div>
+        <p style="margin: 0 0 16px; font-size: 1rem; opacity: 0.7;">Puzzle complete</p>
+        <div style="font-size: 2.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 12px;">${time}</div>
+        <div style="font-size: 1.4rem; font-weight: bold; margin-bottom: 32px;">Score: ${score}</div>
         <button id="win-close-btn" style="
             background: #fff; color: #1e1e1e;
             border: none; border-radius: 6px;

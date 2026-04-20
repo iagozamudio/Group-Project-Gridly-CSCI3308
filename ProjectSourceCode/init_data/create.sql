@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS game_sessions (
   puzzle_data  JSONB NOT NULL,
   started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   completed_at TIMESTAMPTZ DEFAULT NULL,
-  penalty_time SMALLINT DEFAULT 0,
+  time_seconds INTEGER DEFAULT 0,
+  score INTEGER DEFAULT 0,
   twoplayer BOOLEAN DEFAULT FALSE,
   opponent VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL
 );
