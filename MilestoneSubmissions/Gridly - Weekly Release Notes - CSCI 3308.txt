@@ -71,4 +71,24 @@ Weekly 3:
 * The leaderboard is now rendering with real values created by completing the single-player puzzle
    * The SQL database has been created to save completion times
    * The completion time and username get rendered in the leaderboard (serving as a score for the single-player game)
-   * The leaderboard gets rendered in order of fastest time at the top
+   * The leaderboard gets rendered in order of fastest time at the top 
+
+
+Weekly 4: 
+*  Websockets for two-player, meaning:
+   * Two players can select each other as opponents
+   * Enter a match together
+   * Renders two of the same puzzles, so that each person can solve the instance
+   * Communicates when the player completes the puzzle successfully
+* Leaderboard Scoring Updated to work with the correct calculation code
+   * Also works with the two-player functionality
+      * Includes the penalties of hints
+   * Fixed the extra leaderboard page and finalized the calculation process
+* Added logout button to Sidebar
+* Fixed single-player navigation bar styling issue
+   * Made the chat feature smaller
+* Added display name for additional
+* Added FAQ to sidebar
+* Added functionality for the profile stats
+* Fixed small CSS pieces
+* Merged all feature branches
