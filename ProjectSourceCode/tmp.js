@@ -298,7 +298,7 @@ async function getUserRankings(username) {
     SELECT rank FROM (
       SELECT
         username, 
-        DENSE_RANK() OVER (ORDER BY MAX(time_seconds) ASC) AS rank
+        DENSE_RANK() OVER (ORDER BY MIN(time_seconds) ASC) AS rank
         FROM game_sessions
         WHERE username IS NOT NULL
         GROUP BY username
@@ -363,9 +363,16 @@ app.get('/faq', (req, res) =>
 );
 
 app.get('/singleplayer', auth, (req, res) =>
-  res.render('pages/SinglePlayer', { layout: false, user: req.session.user })
+  res.render('pages/SinglePlayer', {
+    user: req.session.user,
+    isSinglePlayer: true
+  })
 );
 
+
+app.get('/logout', auth, (req, res) =>
+  req.session.destroy(() => res.redirect('/login'))
+);
 
 
 // ── POST /register ────────────────────────────────────────────────────────────
@@ -375,7 +382,7 @@ app.get('/singleplayer', auth, (req, res) =>
 //     • missing username or password (catches empty-string '')
 //     • duplicate username already in DB
 app.post('/register', async (req, res) => {
-  const { username, password, securityQuestion, securityAnswer } = req.body;
+  const { displayName, username, password, securityQuestion, securityAnswer } = req.body;
 
   if (!username || !password) {
     if (wantsJson(req)) return res.status(400).json({ message: 'Invalid input' });
@@ -394,10 +401,11 @@ app.post('/register', async (req, res) => {
     }
 
     const hash = await bcrypt.hash(password, 10);
+    const finalDisplayName = displayName?.trim() || username;
 
     await db.none(
-      'INSERT INTO users (username, password) VALUES ($1, $2)',
-      [username, hash]
+      'INSERT INTO users (username, password, display_name) VALUES ($1, $2, $3)',
+      [username, hash, finalDisplayName]
     );
 
     if (!wantsJson(req) && securityQuestion && securityAnswer) {
@@ -409,13 +417,13 @@ app.post('/register', async (req, res) => {
 
     if (wantsJson(req)) return res.status(200).json({ message: 'Success' });
     return res.redirect('/login');
-
   } catch (err) {
     console.error('Registration error:', err.message);
     if (wantsJson(req)) return res.status(500).json({ message: 'Server error' });
     return res.redirect('/register');
   }
 });
+
 
 // ── POST /login ──────────────────────────────────────────────────────────────
 app.post('/login', async (req, res) => {
@@ -472,6 +480,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
+
 // ── Authenticated pages ──────────────────────────────────────────────────────
 app.get('/home', auth, (req, res) =>
   res.render('pages/home', { user: req.session.user,
@@ -482,6 +491,48 @@ app.get('/logout', auth, (req, res) => {
   req.session.destroy();
   res.redirect('/login');
 });
+
+//Updated the profile route to pull the user's game history and pass it to the template for rendering. The getUserGameHistory function is called with the current user's username, and the resulting game history is included in the data passed to the Profile template. 
+//If there's an error fetching the game history, it logs the error and renders the profile page with an empty game history array to prevent the page from breaking.
+app.get('/profile', auth, async (req, res) => {
+  try {
+    const username = req.session.user.username;
+    const gameHistory = await getUserGameHistory(username);
+    const stats = await getUserStats(username);
+    const ranks = await getUserRankings(username);
+
+    res.render('pages/Profile', {
+      user: req.session.user,
+      isProfile: true,
+      gameHistory,
+      stats,
+      ranks
+    });
+  } catch (err) {
+    console.error('Profile route error:', err.message);
+
+    res.render('pages/Profile', {
+      user: req.session.user,
+      isProfile: true,
+      gameHistory: [],
+      stats: {
+        totalGames: 0,
+        bestSingleScore: 0,
+        avgCompletion: "0.0",
+        wins: 0,
+        winRate: "0.0", 
+        totalScore: 0
+      }, 
+      ranks: {
+        singleScoreRank: 'N/A',
+        fastestTimeRank: 'N/A',
+        twoPlayerRank: 'N/A'
+      }
+    });
+  }
+});
+
+
 
 //Updated the profile route to pull the user's game history and pass it to the template for rendering. The getUserGameHistory function is called with the current user's username, and the resulting game history is included in the data passed to the Profile template. 
 //If there's an error fetching the game history, it logs the error and renders the profile page with an empty game history array to prevent the page from breaking.
@@ -767,6 +818,31 @@ app.post('/update-username', auth, async (req, res) => {
     return res.redirect('/Settings');
   }
 });
+
+// ── Update Display Name ─────────────────────────────────────────────────────────────
+app.post('/update-display-name', auth, async (req, res) => {
+  const username = req.session.user.username;
+  const newDisplayName = req.body.newDisplayName?.trim();
+
+  if (!newDisplayName) {
+    return res.redirect('/Settings');
+  }
+
+  try {
+    await db.none(
+      'UPDATE users SET display_name = $1 WHERE username = $2',
+      [newDisplayName, username]
+    );
+
+    req.session.user.display_name = newDisplayName;
+
+    return res.redirect('/Settings');
+  } catch (err) {
+    console.error('Update display name error:', err.message);
+    return res.redirect('/Settings');
+  }
+});
+
 // ── Export server ─────────────────────────────────────────────────────────────
 // ── GET /api/game-session/:id  (retrieve a saved puzzle by session ID) ────────
 app.get('/api/game-session/:id', auth, async (req, res) => {

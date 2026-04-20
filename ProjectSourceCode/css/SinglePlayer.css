@@ -38,7 +38,6 @@ body {
 
 .left-panel {
     width: 700px;
-    margin-left: 180px;
 }
 
 .board-section {
@@ -231,7 +230,7 @@ body {
     font-weight: 700;
 }
 
-/* Active clue highlight */
+Active clue highlight
 .active-clue-item {
     background-color: #00d9ff;
     color: #111;
@@ -311,11 +310,3 @@ body {
     }
 }
 
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 180px;
-    height: 100vh;
-    background-color: #1f1f1f;
-}

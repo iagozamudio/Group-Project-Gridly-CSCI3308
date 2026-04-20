@@ -17,6 +17,13 @@ UPDATE users
 SET profile_image = 'https://cdn.pixabay.com/photo/2017/06/13/12/54/profile-2398783_1280.png'
 WHERE profile_image IS NULL;
 
+-- Display name column (optional with default to username)
+ALTER TABLE users 
+ADD COLUMN IF NOT EXISTS display_name VARCHAR(50);
+
+UPDATE users 
+SET display_name = username
+WHERE display_name IS NULL;
 
 -- ================= SECURITY QUESTIONS =================
 CREATE TABLE IF NOT EXISTS security_questions (

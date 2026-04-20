@@ -30,8 +30,10 @@
       <!-- User Info (RIGHT SIDE) -->
       <div class="ms-4">
 
-        <h2 class="mb-1 fs-1">{{user.username}}</h2>
-        {{!-- <h2 class="mb-1 fs-1">UserName</h2> --}}
+        <h1 class="mb-0 fs-1">{{#if user.display_name}}{{user.display_name}}{{else}}{{user.username}}{{/if}}</h1>
+          <p class="text-secondary fs-4 mb-2">@{{user.username}}</p>
+
+
 
         <div class="d-flex gap-5">
         
