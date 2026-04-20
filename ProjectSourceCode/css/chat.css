@@ -84,3 +84,7 @@
 .error-container div button:hover{
     cursor: pointer;
 }
+
+#textbox {
+  flex: 1;
+}

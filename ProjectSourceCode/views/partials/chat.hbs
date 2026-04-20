@@ -1,13 +1,13 @@
 <link rel="stylesheet" href="../../css/chat.css">
 <script src="../../js/socket.js"></script>
+
 <div class="error-container" id="errorContainer">
-    <!--errors (hopefully don't) fill this -->
 </div>
-<div class="chat-container">
-    <ul class="chat" id="chatbox">
-        <!-- messages fill this -->
-        
-    </ul>
+
+<div class="chat-container" id="chatBox">
+    <button id="closeChat" type="button">&times;</button>
+
+    <ul class="chat" id="chatbox"></ul>
 
     <form id="sendMessageForm" class="chat-form">
         <input type="text" name="message" id="textbox" placeholder="Type a message...">

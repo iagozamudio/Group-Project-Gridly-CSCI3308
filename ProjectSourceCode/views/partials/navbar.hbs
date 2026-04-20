@@ -15,6 +15,9 @@
         <a class="nav-link {{#if isLeaderboard}}text-success{{else}}text-white{{/if}}" href="/leaderboard">Leaderboard</a>
         <a class="nav-link {{#if isProfile}}text-success{{else}}text-white{{/if}}" href="/profile">Profile</a>
       </div>
+      <button class="btn btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#faqSidebar">
+        <img src="../img/white-simple-question-symbol-icon-png-701751694963665egaqlw3om4.png" alt="FAQ" style="width: 20px; height: 20px; margin-right: 5px;">
+      </button>
 
       <!-- 👉 SETTINGS BUTTON (triggers sidebar) -->
       <button class="btn btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#settingsSidebar">
@@ -36,5 +39,61 @@
       <a href="/profile" class="list-group-item bg-dark text-white border-secondary">Profile</a>
       <a href="/Settings" class="list-group-item bg-dark text-white border-secondary">Account Settings</a>
     </div>
+  </div>
+</div>
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="faqSidebar">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">FAQ</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <!-- 👇 THIS is where the accordion goes -->
+  <div class="offcanvas-body">
+
+    <div class="accordion" id="faqAccordion">
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="q1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#a1">
+                                What is Gridly?
+                            </button>
+                        </h2>
+                        <div id="a1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Gridly is a platform where players compete in solving crosswords to earn points and track their progress.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="q2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a2">
+                                How do I earn points?
+                            </button>
+                        </h2>
+                        <div id="a2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Points are earned by solving crosswords correctly and quickly.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="q3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a3">
+                                How does the ranking system work?
+                            </button>
+                        </h2>
+                        <div id="a3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Rankings are based on total points accumulated by players over time which is based on how quickly a user solves a crossword.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+    </div>
+
   </div>
 </div>
