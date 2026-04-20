@@ -489,7 +489,7 @@ function checkWin() {
     fetch('/game-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ time_seconds: seconds, puzzle_data: puzzleData, score: gameStats.score})
+      body: JSON.stringify({ session_id: Number(session_id), time_seconds: seconds, puzzle_data: puzzleData, score: gameStats.score})
     })
     .catch(err => console.warn('Could not save session:', err))
     .finally(() => showWinPopup(completionTime, gameStats.score));

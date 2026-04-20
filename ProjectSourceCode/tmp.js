@@ -25,6 +25,53 @@ const wss = new WebSocket.Server({ server, path: '/ws' });
 const PORT = 3000;
 
 const clients = new Map();
+
+function determineWinner(playerOneScore, playerTwoScore, playerOneTime, playerTwoTime) {
+  if (playerOneScore > playerTwoScore) return 1;
+  if (playerTwoScore > playerOneScore) return 2;
+  if (playerOneTime < playerTwoTime) return 1;
+  if (playerTwoTime < playerOneTime) return 2;
+  return 0;
+}
+
+function calculateRating(playerRating, opponentRating, playerScore, opponentScore, didWin) {
+  const scoreDiff = Math.abs(playerScore - opponentScore);
+  let delta = Math.max(10, Math.round(scoreDiff * 0.1));
+
+  if (didWin && playerRating < opponentRating) {
+    delta += Math.round((opponentRating - playerRating) * 0.05);
+  }
+
+  if (!didWin && playerRating > opponentRating) {
+    delta += Math.round((playerRating - opponentRating) * 0.05);
+  }
+
+  return delta;
+}
+
+function updateRatings(playerOneRating, playerTwoRating, playerOneScore, playerTwoScore, playerOneTime, playerTwoTime) {
+  const winner = determineWinner(playerOneScore, playerTwoScore, playerOneTime, playerTwoTime);
+
+  let p1New = playerOneRating;
+  let p2New = playerTwoRating;
+
+  if (winner === 1) {
+    const delta = calculateRating(playerOneRating, playerTwoRating, playerOneScore, playerTwoScore, true);
+    p1New = playerOneRating + delta;
+    p2New = playerTwoRating - delta;
+  } else if (winner === 2) {
+    const delta = calculateRating(playerTwoRating, playerOneRating, playerTwoScore, playerOneScore, true);
+    p2New = playerTwoRating + delta;
+    p1New = playerOneRating - delta;
+  }
+
+  return {
+    winner,
+    playerOne: { before: playerOneRating, after: p1New },
+    playerTwo: { before: playerTwoRating, after: p2New }
+  };
+}
+
 wss.on("connection", (ws, req) => {
   sessionParser(req, {}, () => {
     if (!req.session || !req.session.user) {
@@ -546,11 +593,17 @@ app.post('/test-cleanup', async (req, res) => {
 
 // ── Save game session ────────────────────────────────────────────────────────
 app.post('/game-session', async (req, res) => {
-  const { time_seconds, puzzle_data, score } = req.body;
+  const { session_id, time_seconds, puzzle_data, score } = req.body;
   const username = req.session.user?.username ?? null; // null = guest
 
   if (typeof time_seconds !== 'number' || time_seconds < 0) {
     return res.status(400).json({ message: 'Invalid time' });
+  }
+  if (typeof score !== 'number' || score < 0) {
+    return res.status(400).json({ message: 'Invalid score' });
+  }
+  if (typeof session_id !== 'number' || session_id < 1) {
+    return res.status(400).json({ message: 'Invalid session_id' });
   }
 
   try {
