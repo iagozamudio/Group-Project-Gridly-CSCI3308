@@ -530,6 +530,48 @@ app.get('/profile', auth, async (req, res) => {
 
 
 
+//Updated the profile route to pull the user's game history and pass it to the template for rendering. The getUserGameHistory function is called with the current user's username, and the resulting game history is included in the data passed to the Profile template. 
+//If there's an error fetching the game history, it logs the error and renders the profile page with an empty game history array to prevent the page from breaking.
+app.get('/profile', auth, async (req, res) => {
+  try {
+    const username = req.session.user.username;
+    const gameHistory = await getUserGameHistory(username);
+    const stats = await getUserStats(username);
+    const ranks = await getUserRankings(username);
+
+    res.render('pages/Profile', {
+      user: req.session.user,
+      isProfile: true,
+      gameHistory,
+      stats,
+      ranks
+    });
+  } catch (err) {
+    console.error('Profile route error:', err.message);
+
+    res.render('pages/Profile', {
+      user: req.session.user,
+      isProfile: true,
+      gameHistory: [],
+      stats: {
+        totalGames: 0,
+        bestSingleScore: 0,
+        avgCompletion: "0.0",
+        wins: 0,
+        winRate: "0.0", 
+        totalScore: 0
+      }, 
+      ranks: {
+        singleScoreRank: 'N/A',
+        fastestTimeRank: 'N/A',
+        twoPlayerRank: 'N/A'
+      }
+    });
+  }
+});
+
+
+
 
 app.get('/Settings', auth, (req, res) =>
   res.render('pages/Settings', {
