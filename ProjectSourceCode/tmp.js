@@ -363,8 +363,12 @@ app.get('/faq', (req, res) =>
 );
 
 app.get('/singleplayer', auth, (req, res) =>
-  res.render('pages/SinglePlayer', { layout: false, user: req.session.user })
+  res.render('pages/SinglePlayer', {
+    user: req.session.user,
+    isSinglePlayer: true
+  })
 );
+
 
 app.get('/logout', auth, (req, res) =>
   req.session.destroy(() => res.redirect('/login'))
