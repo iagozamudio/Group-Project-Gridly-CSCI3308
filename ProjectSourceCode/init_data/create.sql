@@ -2,7 +2,8 @@
 -- ================= USERS TABLE =================
 CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(50) PRIMARY KEY,
-  password VARCHAR(255) NOT NULL
+  password VARCHAR(255) NOT NULL,
+  player_rating INT NOT NULL DEFAULT 1000
 );
 
 -- Profile image column (optional with default)
@@ -17,6 +18,13 @@ UPDATE users
 SET profile_image = 'https://cdn.pixabay.com/photo/2017/06/13/12/54/profile-2398783_1280.png'
 WHERE profile_image IS NULL;
 
+-- Display name column (optional with default to username)
+ALTER TABLE users 
+ADD COLUMN IF NOT EXISTS display_name VARCHAR(50);
+
+UPDATE users 
+SET display_name = username
+WHERE display_name IS NULL;
 
 -- ================= SECURITY QUESTIONS =================
 CREATE TABLE IF NOT EXISTS security_questions (
@@ -56,8 +64,14 @@ CREATE TABLE IF NOT EXISTS two_player_sessions (
   game_id       VARCHAR(64) NOT NULL,
   username      VARCHAR(50),
   time_seconds  INT NOT NULL,
+  expected_time INT NOT NULL,
+  hints_used INT NOT NULL DEFAULT 0,
+  bad_checks INT NOT NULL DEFAULT 0,
+  completion DECIMAL(5,4) NOT NULL DEFAULT 0,
+  puzzle_score DECIMAL(10,2) NOT NULL DEFAULT 0,
   is_winner     BOOLEAN NOT NULL DEFAULT FALSE,
-  score         INT NOT NULL,
+  rating_before INT NOT NULL,
+  rating_after INT NOT NULL,
   completed_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_two_player_sessions_user FOREIGN KEY(username)
     REFERENCES users(username)
@@ -71,3 +85,5 @@ CREATE INDEX IF NOT EXISTS idx_tp_sessions_game_id  ON two_player_sessions(game_
 CREATE INDEX IF NOT EXISTS idx_tp_sessions_username ON two_player_sessions(username);
 CREATE INDEX IF NOT EXISTS idx_gs_username          ON game_sessions(username);
 CREATE INDEX IF NOT EXISTS idx_gs_time              ON game_sessions(time_seconds);
+
+

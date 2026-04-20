@@ -120,7 +120,7 @@ async function loadTwoPlayer() {
             <strong>#${i + 1}</strong> ${row.username || 'Guest'}
             <small class="text-muted ms-2">${row.games_played} game${row.games_played !== 1 ? 's' : ''} · ${row.wins} W</small>
           </span>
-          <span class="badge ${badge} rounded-pill">${row.total_score} pts</span>
+          <span class="badge ${badge} rounded-pill">${row.player_rating} pts</span>
         </div>`;
     }).join('');
 

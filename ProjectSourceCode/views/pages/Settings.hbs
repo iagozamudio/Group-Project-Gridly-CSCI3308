@@ -64,8 +64,27 @@
                       Save Username
                     </button>
                   </form>
+
+                  <form action="/update-display-name" method="POST">
+                    <div class="form-group">
+                      <label class="form-label text-black">Display Name</label>
+                      <input
+                        type="text"
+                        name="newDisplayName"
+                        class="form-control mb-1"
+                        style="background-color: white; color: black; border: 1px solid #191717;"
+                        value="{{user.display_name}}"
+                      >
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2">
+                      Save Display Name
+                    </button>
+                  </form>
+
                 </div>
               </div>
+
+
 
             </div>
             <div class="tab-pane fade" id="account-change-password">
