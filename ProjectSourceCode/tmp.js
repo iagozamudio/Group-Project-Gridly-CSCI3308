@@ -366,6 +366,9 @@ app.get('/singleplayer', auth, (req, res) =>
   res.render('pages/SinglePlayer', { layout: false, user: req.session.user })
 );
 
+app.get('/logout', auth, (req, res) =>
+  req.session.destroy(() => res.redirect('/login'))
+);
 
 
 // ── POST /register ────────────────────────────────────────────────────────────

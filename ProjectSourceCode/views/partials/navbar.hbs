@@ -16,7 +16,7 @@
         <a class="nav-link {{#if isProfile}}text-success{{else}}text-white{{/if}}" href="/profile">Profile</a>
       </div>
 
-      <!-- 👉 SETTINGS BUTTON (triggers sidebar) -->
+      <!-- Settings button -->
       <button class="btn btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#settingsSidebar">
         ⚙️
       </button>
@@ -35,6 +35,34 @@
     <div class="list-group">
       <a href="/profile" class="list-group-item bg-dark text-white border-secondary">Profile</a>
       <a href="/Settings" class="list-group-item bg-dark text-white border-secondary">Account Settings</a>
+
+      <button
+        type="button"
+        class="list-group-item bg-dark text-danger border-secondary text-start"
+        data-bs-toggle="modal"
+        data-bs-target="#logoutModal"
+      >
+        Logout
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGOUT CONFIRMATION MODAL -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to log out?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <a href="/logout" class="btn btn-danger">Yes, Log Out</a>
+      </div>
     </div>
   </div>
 </div>
