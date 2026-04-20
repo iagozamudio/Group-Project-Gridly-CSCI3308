@@ -43,7 +43,7 @@ ws.onmessage = (event) => {
       challengeList.appendChild(newChallenge);
     } else if (data.status == "rejecting"){ // rejection being sent back from recipient TODO display message or smth  
     } else if (data.status == "redirect"){
-      window.location.href = `/game?session_id=${data.session_id}`;
+      window.location.href = `/multiplayerredirect?id=${data.session_id}`;
     }
   }
 };
@@ -65,8 +65,10 @@ async function getPlayers () {
     if (!json) {
       throw new Error("No players");
     }
-    return json
-}
+    const i = json.indexOf(user.username);
+    if (i !== -1) json.splice(i, 1);
+    return json;
+  }
 const refreshPlayerList = async () => {
     const dropdown = document.getElementById("playerDropdown");
     dropdown.innerHTML = "";
@@ -74,7 +76,7 @@ const refreshPlayerList = async () => {
     console.log(players)
     for (let i = 0; i < players.length; i++){
         let newOption = document.createElement("option");
-        newOption.text = players[i];
+        newOption.text = players[i];``
         newOption.value = players[i];
         dropdown.appendChild(newOption);
     }

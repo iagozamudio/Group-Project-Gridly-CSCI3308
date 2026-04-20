@@ -25,9 +25,10 @@ CREATE TABLE IF NOT EXISTS security_questions (
 CREATE TABLE IF NOT EXISTS game_sessions (
   session_id   SERIAL PRIMARY KEY,
   username     VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL,
-  time_seconds INT NOT NULL,
-  puzzle_data  JSONB,
-  completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-  /* TODO add links between multiplayer sessions*/
+  puzzle_data  JSONB NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ DEFAULT NULL,
+  penalty_time SMALLINT DEFAULT 0,
+  twoplayer BOOLEAN DEFAULT FALSE,
+  opponent VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL
 );
-
