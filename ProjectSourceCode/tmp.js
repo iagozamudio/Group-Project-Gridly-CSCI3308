@@ -546,19 +546,16 @@ app.post('/test-cleanup', async (req, res) => {
 
 // ── Save game session ────────────────────────────────────────────────────────
 app.post('/game-session', async (req, res) => {
-  const { time_seconds, puzzle_data } = req.body;
+  const { session_id, completed_at } = req.body;
   const username = req.session.user?.username ?? null; // null = guest
-
-  if (typeof time_seconds !== 'number' || time_seconds < 0) {
-    return res.status(400).json({ message: 'Invalid time' });
-  }
 
   try {
     const row = await db.one(
-      `INSERT INTO game_sessions (username, time_seconds, puzzle_data)
-       VALUES ($1, $2, $3)
-       RETURNING session_id, time_seconds, completed_at, puzzle_data`,
-      [username, time_seconds, puzzle_data ? JSON.stringify(puzzle_data) : null]
+      `UPDATE game_sessions
+       SET completed_at = NOW()
+       WHERE session_id = $2
+       RETURNING session_id`,
+      [completed_at, session_id]
     );
 
     return res.status(201).json({ message: 'Saved', session: row });
@@ -572,14 +569,17 @@ app.post('/game-session', async (req, res) => {
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const rows = await db.any(
-      `SELECT COALESCE(username, 'Guest') AS username,
-              time_seconds,
-              completed_at
+      `SELECT 
+         COALESCE(username, 'Guest') AS username,
+         EXTRACT(EPOCH FROM (completed_at - started_at)) AS time_seconds,
+         completed_at
        FROM game_sessions
+       WHERE completed_at IS NOT NULL
+        AND started_at IS NOT NULL
        ORDER BY time_seconds ASC
        LIMIT 20`
     );
-
+    console.log(rows)
     return res.json(rows);
   } catch (err) {
     console.error('Leaderboard error:', err.message);

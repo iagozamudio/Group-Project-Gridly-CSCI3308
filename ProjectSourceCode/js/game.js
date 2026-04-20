@@ -49,7 +49,6 @@ async function init() {
 init();
 // Timer
 const timerElement = document.getElementById('timer');
-let completionTime = null;
 
 function formatTime(sec) {
   const hrs  = Math.floor(sec / 3600);
@@ -416,9 +415,8 @@ function checkWin() {
             if (!input || input.value !== grid[r][c]) return;
         }
     }
-
+    const completed_at = new Date(Date.now())
     clearInterval(timerInterval);
-    completionTime = formatTime(seconds);
 
     // Serialize the randomly generated puzzle so it can be saved to the DB
     const puzzleData = {
@@ -437,10 +435,10 @@ function checkWin() {
     fetch('/game-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ time_seconds: seconds, puzzle_data: puzzleData })
+      body: JSON.stringify({ session_id: SESSION_ID })
     })
     .catch(err => console.warn('Could not save session:', err))
-    .finally(() => showWinPopup(completionTime));
+    .finally(() => showWinPopup((completed_at - START_TIME) / 1000));
 }
 
 // Show the win popup
