@@ -3,7 +3,7 @@
 
 const checkButton = document.getElementById('checkButton');
 const checkMenu   = document.getElementById('checkMenu');
-
+let START_TIME = null;
 checkButton.addEventListener('click', function (e) {
   e.stopPropagation();
   checkMenu.classList.toggle('show');
@@ -14,43 +14,18 @@ document.addEventListener('click', function (e) {
   }
 });
 
-// Timer
-const timerElement = document.getElementById('timer');
-let seconds        = 0;
-let completionTime = null;
 
-function formatTime(sec) {
-  const hrs  = Math.floor(sec / 3600);
-  const mins = Math.floor((sec % 3600) / 60);
-  const secs = sec % 60;
-  return String(hrs).padStart(2,'0') + ':' +
-         String(mins).padStart(2,'0') + ':' +
-         String(secs).padStart(2,'0');
-}
-
-const timerInterval = setInterval(() => {
-  seconds++;
-  timerElement.textContent = formatTime(seconds);
-}, 1000);
-
-// Puzzle state
-let SIZE         = 5;
-let grid         = [];
-let placedWords  = [];
-let numbering    = [];
-let selectedCell = null;
-let selectedDir  = 'across';
-const session_id = document.getElementById("session_id").textContent;
 
 // Boot
 async function init() {
   let puzzle;
   try {
-    const res = await fetch(`/api/game-session/${session_id}`);
+    const res = await fetch(`/api/game-session/${SESSION_ID}`);
     if (!res.ok) {
       throw new Error("Bad response from server");
     }
     const json = await res.json();
+    START_TIME = new Date(json.started_at).getTime();
     if (!json) {
       throw new Error("Empty response from server");
     }
@@ -72,6 +47,32 @@ async function init() {
   }
 }
 init();
+// Timer
+const timerElement = document.getElementById('timer');
+let completionTime = null;
+
+function formatTime(sec) {
+  const hrs  = Math.floor(sec / 3600);
+  const mins = Math.floor((sec % 3600) / 60);
+  const secs = sec % 60;
+  return String(hrs).padStart(2,'0') + ':' +
+         String(mins).padStart(2,'0') + ':' +
+         String(secs).padStart(2,'0');
+}
+
+const timerInterval = setInterval(() => {
+  if (!START_TIME) return;
+  const elapsedSeconds = Math.floor((Date.now() - START_TIME) / 1000);
+  timerElement.textContent = formatTime(elapsedSeconds);
+}, 1000);
+
+// Puzzle state
+let SIZE         = 5;
+let grid         = [];
+let placedWords  = [];
+let numbering    = [];
+let selectedCell = null;
+let selectedDir  = 'across';
 
 // Compute numbering
 function computeNumbering() {
