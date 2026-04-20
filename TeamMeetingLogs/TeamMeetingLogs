@@ -93,6 +93,22 @@ Meeting with Kelechi - Monday 12:30-12:50:
 --> Tommy wil add more to the FAQ page to display more 
 --> Decide on how frequently the leaderboard should be updated (daily, weekly or biweekly?), seperate leaderboards for single and multiplayer
 
+(Week 5 -- James O'Connor)
+Date: 4/20/26
+Week 5 meeting and log:
+
+Group meeting from 12:15-1:00
+
+--> Met in zoom/in-person. Everyone attended
+--> Multiplayer functioning on seperate branch, needs merging
+--> New db schema for multiplayer allows for persistent game sessions on multi and singleplayer
+--> Juan will update his new leaderboard and scoring methods to work with new session db schema 
+--> Samra finished FAQ page in sidebar and worked on settings
+--> Need to do minor css update
+--> Planning demo 
+--> Planning presentation
+--> Discussed distrobution of final workload
+--> Planning for UAT testing 
 
 
 
