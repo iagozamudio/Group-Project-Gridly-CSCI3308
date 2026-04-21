@@ -6,7 +6,6 @@
   <title>Crossword Game</title>
   <link rel="stylesheet" href="../css/SinglePlayer.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <script src="../js/game.js" defer></script>
 </head>
 
 <body>
@@ -76,12 +75,20 @@
 
     </div>
   </div>
-
+  {{#if isTwoPlayer}}
+    {{> chat}}
+  {{/if}}
+  
   <script id="user-data" type="application/json">
     {{{json user}}}
   </script>
-
-  {{> chat}}
+  <script id="session_id" type="application/json">
+    {{ session_id }}
+  </script>
+  <script>
+    const opponent = "{{ opponent }}"
+  </script>
+  <script src="../js/game.js" defer></script>
 
 </body>
 </html>

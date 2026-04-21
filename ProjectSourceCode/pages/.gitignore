@@ -1,0 +1,4 @@
+node_modules/
+.env
+img/uploads/
+ex.js

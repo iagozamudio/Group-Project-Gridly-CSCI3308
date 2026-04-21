@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let message = {
       "type": "chat",
       "user": user,
-      "recipient": "*", // should be swapped out with actual username/id once multiplayer is working
+      "recipient": opponent,
       "text": formData.get("message")
     }
     ws.send(JSON.stringify(message))

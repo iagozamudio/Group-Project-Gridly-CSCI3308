@@ -25,6 +25,57 @@ const wss = new WebSocket.Server({ server, path: '/ws' });
 const PORT = 3000;
 
 const clients = new Map();
+
+function determineWinner(playerOneScore, playerTwoScore, playerOneTime, playerTwoTime) {
+  if (playerOneScore > playerTwoScore) return 1;
+  if (playerTwoScore > playerOneScore) return 2;
+  if (playerOneTime < playerTwoTime) return 1;
+  if (playerTwoTime < playerOneTime) return 2;
+  return 0;
+}
+
+function calculateRating(playerRating, opponentRating, playerScore, opponentScore, didWin) {
+  const scoreDiff = Math.abs(playerScore - opponentScore);
+  let delta = Math.max(10, Math.round(scoreDiff * 0.1));
+
+  if (didWin && playerRating < opponentRating) {
+    delta += Math.round((opponentRating - playerRating) * 0.05);
+  }
+
+  if (!didWin && playerRating > opponentRating) {
+    delta += Math.round((playerRating - opponentRating) * 0.05);
+  }
+
+  return delta;
+}
+
+function updateRatings(playerOneRating, playerTwoRating, playerOneScore, playerTwoScore, playerOneTime, playerTwoTime) {
+  const winner = determineWinner(playerOneScore, playerTwoScore, playerOneTime, playerTwoTime);
+
+  let p1New = playerOneRating;
+  let p2New = playerTwoRating;
+
+  if (winner === 1) {
+    const delta = calculateRating(playerOneRating, playerTwoRating, playerOneScore, playerTwoScore, true);
+    p1New = playerOneRating + delta;
+    p2New = playerTwoRating - delta;
+  } else if (winner === 2) {
+    const delta = calculateRating(playerTwoRating, playerOneRating, playerTwoScore, playerOneScore, true);
+    p2New = playerTwoRating + delta;
+    p1New = playerOneRating - delta;
+  }
+
+  return {
+    winner,
+    playerOne: { before: playerOneRating, after: p1New },
+    playerTwo: { before: playerTwoRating, after: p2New }
+  };
+}
+
+function generateMatchId() {
+  return `match_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 wss.on("connection", (ws, req) => {
   sessionParser(req, {}, () => {
     if (!req.session || !req.session.user) {
@@ -49,29 +100,11 @@ wss.on("connection", (ws, req) => {
       } catch {
         return;
       }
+      const recipient = clients.get(messageJSON.recipient);
+      if (messageJSON.type === "chat") { 
+       // pull recipient socket instance from map
 
-      if (messageJSON.type === "chat") { // in the future game info will be sent, so other cases will be available as well
-        const recipient = clients.get(messageJSON.recipient); // pull recipient socket instance from map
-
-        if (messageJSON.recipient == "*") { // temporary send to all users case; once multiplayer is ready delete
-          const outgoing = {
-            type: "chat",
-            sender: username,
-            text: messageJSON.text
-          };
-          for (const [recipientUsername, client] of clients.entries()) { // send to all connected users
-            if (recipientUsername != username) {
-              client.send(JSON.stringify(outgoing));
-            }
-          };
-          const successMessage = { // success msg to return to sender
-            type: "chat",
-            sender: username,
-            text: messageJSON.text,
-            status: "success"
-          };
-          ws.send(JSON.stringify(successMessage));
-        } else if (!recipient) { // if recipient socket not found in clients map (e.g. they have disconnected or dont exist)
+        if (!recipient) { // if recipient socket not found in clients map (e.g. they have disconnected or dont exist)
           ws.send(JSON.stringify({
             type: "chat",
             status: "failure",
@@ -93,8 +126,34 @@ wss.on("connection", (ws, req) => {
           };
           ws.send(JSON.stringify(successMessage)); // success message is important; how else would the sender know whether or not their message has been sent, and whether or not it should be rendered in chat?
         }
-      }
+      } else if (messageJSON.type == "challenge"){ // challenge/inviting other player to a game and all requests related to it
+        console.log("challenge recieved")
+        const status = messageJSON.status;
+        if (status == "sending"){ // challenge being sent from one user to another
+          recipient.send(JSON.stringify(messageJSON));
+          console.log("sending challenge")
+        } else if (status == "accepting"){ // acceptance being sent back from recipient
+          insertSessions(messageJSON.recipient, username).then(sessionIDs =>{
+            let response = {
+              "type": "challenge",
+              "status": "redirect"
+            }
+            let response1 = {
+              ...response,
+              session_id: sessionIDs[0]
+            } 
+            let response2 = {
+              ...response,
+              session_id: sessionIDs[1]
+            }
+            ws.send(JSON.stringify(response2))
+            recipient.send(JSON.stringify(response1))
+          }).catch(console.error);
+          
+        } else if (status == "rejecting"){ // rejection being sent back from recipient
 
+        }
+      }
       console.log("Received:", message.toString());
     });
 
@@ -106,6 +165,36 @@ wss.on("connection", (ws, req) => {
 });
 
 
+async function insertSessions(user1, user2) {
+  try {
+    const puzzleData = generatePuzzle();
+    const isTwoPlayer = !!(user1 && user2);
+    const match_id = isTwoPlayer ? generateMatchId() : null;
+    const result1 = await db.query(
+      `INSERT INTO game_sessions (match_id, username, puzzle_data, twoplayer, opponent)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING session_id`,
+      [match_id, user1, puzzleData, isTwoPlayer, user2]
+    );
+
+    let result2 = [{session_id: null}];  // just so I can reuse this function in 1p and 2p scenarios
+    if (user2 != null){
+      result2 = await db.query(
+        `INSERT INTO game_sessions (match_id, username, puzzle_data, twoplayer, opponent)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING session_id`,
+        [match_id, user2, puzzleData, isTwoPlayer, user1]
+      );
+    }
+
+
+    return [result1[0].session_id, result2[0].session_id];
+
+  } catch (err) {
+    console.error("DB ERROR:", err);
+    throw err;
+  }
+}
 // ── Database ──────────────────────────────────────────────────────────────────
 const db = pgp({
   host:     process.env.POSTGRES_HOST || 'db',  // Changed this line
@@ -181,71 +270,82 @@ const auth = (req, res, next) => {
   next();
 };
 
-function calculatePuzzleScore(expected_time, time_seconds, completion, hints_used, bad_checks) {
-  const base = 1500;
-  const timeFactor = expected_time / time_seconds;
-  const penalty = 50 * hints_used + 10 * bad_checks;
-  const puzzleScore = base * timeFactor * completion - penalty;
-  return Math.max(0, puzzleScore);
-}
-
-function determineWinner(playerOneScore, playerTwoScore, playerOneTime, playerTwoTime) {
-  if (playerOneScore > playerTwoScore) return 1;
-  if (playerTwoScore > playerOneScore) return 2;
-  if (playerOneTime < playerTwoTime) return 1;
-  if (playerTwoTime < playerOneTime) return 2;
-  return 0;
-}
-
-function calculateRatingDelta(playerRating, opponentRating, playerScore, opponentScore, didWin) {
-  const scoreDiff = Math.abs(playerScore - opponentScore);
-  let delta = Math.max(10, Math.round(scoreDiff * 0.1));
-
-  if (didWin && playerRating < opponentRating) {
-    delta += Math.round((opponentRating - playerRating) * 0.05);
-  }
-
-  if (!didWin && playerRating > opponentRating) {
-    delta += Math.round((playerRating - opponentRating) * 0.05);
-  }
-  return delta;
-}
-
 async function getPlayerRating(username) {
   const row = await db.one(
-    'SELECT player_rating FROM users WHERE username = $1',
+    'SELECT rating FROM users WHERE username = $1',
     [username]
   );
-  return row.player_rating;
+  return row.rating;
 }
 // ── Get user game history (last 10 sessions) ─────────────────────────────────
 // This function retrieves the last 10 game sessions for a given user, combining both single-player and multiplayer sessions. It returns an array of session objects with details such as game type, score, time taken, completion status, and result (win/loss for multiplayer).
 
+async function finalizeMatchRatings(session_id) {
+  const currentSession = await db.oneOrNone(
+    `SELECT session_id, username, score, time_seconds, match_id, twoplayer
+     FROM game_sessions
+     WHERE session_id = $1`,
+    [session_id]
+  );
+
+  if (!currentSession || !currentSession.twoplayer || !currentSession.match_id) {
+    return;
+  }
+
+  const sessions = await db.any(
+    `SELECT session_id, username, score, time_seconds, completed_at
+     FROM game_sessions
+     WHERE match_id = $1`,
+    [currentSession.match_id]
+  );
+
+  if (sessions.length !== 2) return;
+
+  const playerOne = sessions[0];
+  const playerTwo = sessions[1];
+
+  if (!playerOne.completed_at || !playerTwo.completed_at) {
+    return;
+  }
+
+  const playerOneRating = await getPlayerRating(playerOne.username);
+  const playerTwoRating = await getPlayerRating(playerTwo.username);
+
+  const result = updateRatings(
+    playerOneRating,
+    playerTwoRating,
+    Number(playerOne.score),
+    Number(playerTwo.score),
+    Number(playerOne.time_seconds),
+    Number(playerTwo.time_seconds)
+  );
+
+  await db.none(
+    `UPDATE users
+     SET rating = $1
+     WHERE username = $2`,
+    [result.playerOne.after, playerOne.username]
+  );
+
+  await db.none(
+    `UPDATE users
+     SET rating = $1
+     WHERE username = $2`,
+    [result.playerTwo.after, playerTwo.username]
+  );
+}
+
 async function getUserGameHistory(username){
   const query = `SELECT 
+  CASE WHEN twoplayer THEN 'multi' ELSE 'single' END AS game_type,
   'single' AS game_type,
   session_id AS game_id,
-  puzzle_score AS score,
+  score,
   time_seconds,
   completed_at,
-  completion,
   NULL AS result
 FROM game_sessions
 WHERE username = $1
-
-UNION ALL
-
-SELECT
-  'multi' AS game_type,
-  tp_session_id AS game_id,
-  puzzle_score AS score,
-  time_seconds,
-  completed_at,
-  completion,
-  CASE WHEN is_winner THEN 'Win' ELSE 'Loss' END AS result
-FROM two_player_sessions
-WHERE username = $1
-
 ORDER BY completed_at DESC
 LIMIT 10`;
   
@@ -253,11 +353,43 @@ LIMIT 10`;
 //Teh funciton shoud return a  
     try {
       const history = await db.any(query, [username]);
-      return history;
-    } catch (err) {
-      console.error('Error fetching game history:', err.message);
-      throw err;
-    } 
+      for (const game of history){
+        if (game.game_type === 'multi'){
+      const opponentGame = await db.oneOrNone(
+          `SELECT score, time_seconds
+           FROM game_sessions
+           WHERE match_id = (
+             SELECT match_id
+             FROM game_sessions
+             WHERE session_id = $1
+           )
+           AND session_id <> $1
+           LIMIT 1`,
+          [game.game_id]
+        );
+
+        if (opponentGame) {
+          if (Number(game.score) > Number(opponentGame.score)) {
+            game.result = 'Win';
+          } else if (Number(game.score) < Number(opponentGame.score)) {
+            game.result = 'Loss';
+          } else if (Number(game.time_seconds) < Number(opponentGame.time_seconds)) {
+            game.result = 'Win';
+          } else if (Number(game.time_seconds) > Number(opponentGame.time_seconds)) {
+            game.result = 'Loss';
+          } else {
+            game.result = 'Draw';
+          }
+        }
+      }
+    }
+
+    return history;
+  } catch (err) {
+    console.error('Error fetching game history:', err.message);
+    throw err;
+  }
+
 }; 
 
 
@@ -267,30 +399,33 @@ async function getUserStats(username) {
   const singlePlayerQuery = `
     SELECT
       COUNT(*) AS num_of_single_games,
-      COALESCE(MAX(puzzle_score), 0) AS best_single_score,
-      COALESCE(AVG(completion), 0) AS avg_completion,
-      COALESCE(SUM(puzzle_score), 0) AS total_points
+      COALESCE(MAX(score), 0) AS best_single_score,
+      COALESCE(SUM(score), 0) AS total_points
     FROM game_sessions
     WHERE username = $1
   `;
 
   const multiPlayerQuery = `
     SELECT
-      COUNT(*) AS num_of_multi_games,
-      COALESCE(SUM(CASE WHEN is_winner THEN 1 ELSE 0 END), 0) AS num_wins
-    FROM two_player_sessions
+      session_id,
+      score,
+      time_seconds,
+      match_id
+    FROM game_sessions
     WHERE username = $1
+        AND completed_at IS NOT NULL
+        AND twoplayer = TRUE
   `;
 
   const ratingQuery = `
-    SELECT player_rating
+    SELECT rating
     FROM users
     WHERE username = $1
   `;
 
   try {
     const singlePlayerStats = await db.one(singlePlayerQuery, [username]);
-    const multiPlayerStats = await db.one(multiPlayerQuery, [username]);
+    const multiPlayerStats = await db.any(multiPlayerQuery, [username]);
     const ratingRow = await db.one(ratingQuery, [username]);
 
     const totalGames =
@@ -300,17 +435,15 @@ async function getUserStats(username) {
     const wins = Number(multiPlayerStats.num_wins);
     const multiGames = Number(multiPlayerStats.num_of_multi_games);
     const winRate = multiGames > 0 ? ((wins / multiGames) * 100).toFixed(1) : "0.0";
-    const avgCompletion = (Number(singlePlayerStats.avg_completion) * 100).toFixed(1);
     const totalScore = Number(singlePlayerStats.total_points).toFixed(0);
 
     return {
       totalGames,
       bestSingleScore: Number(singlePlayerStats.best_single_score).toFixed(0),
-      avgCompletion,
       wins,
       winRate,
       totalScore,
-      playerRating: Number(ratingRow.player_rating)
+      rating: Number(ratingRow.rating)
     };
   } catch (err) {
     console.error('Error fetching user stats:', err.message);
@@ -324,7 +457,7 @@ async function getUserRankings(username) {
   SELECT rank FROM (
     SELECT
       username, 
-      DENSE_RANK() OVER (ORDER BY MAX(puzzle_score) DESC) AS rank
+      DENSE_RANK() OVER (ORDER BY MAX(score) DESC) AS rank
       FROM game_sessions
       WHERE username IS NOT NULL
       GROUP BY username
@@ -348,7 +481,7 @@ async function getUserRankings(username) {
     FROM (
       SELECT
         username,
-        DENSE_RANK() OVER (ORDER BY player_rating DESC) AS rank
+        DENSE_RANK() OVER (ORDER BY rating DESC) AS rank
       FROM users
       WHERE username IS NOT NULL
     ) ranked
@@ -381,11 +514,75 @@ app.get('/welcome', (req, res) => {
   res.json({ status: 'success', message: 'Welcome!' });
 });
 
-app.get('/', (req, res) => res.redirect('pages/login'));
+app.get('/', (req, res) => res.redirect('/login'));
 
 // ── Page renders ─────────────────────────────────────────────────────────────
 app.get('/login', (req, res) => res.render('pages/login'));
 app.get('/register', (req, res) => res.render('pages/register'));
+app.get('/play', auth, (req, res) =>
+  res.render('pages/game', { layout: false, user: req.session.user  })
+);
+
+const pullActiveSession = async (username, isTwoPlayer)=>{
+  const query = `SELECT * FROM game_sessions WHERE username = '${username}' AND twoplayer = ${isTwoPlayer} AND completed_at IS NULL`;
+  const sessions = await db.oneOrNone(query);
+  return sessions;
+}
+
+app.get('/singleplayer', auth, async (req, res) => {
+  /*if (req.session.session_id){
+    return res.render('pages/game', {
+        user: req.session.user,
+        session_id: req.session.session_id,
+        isTwoPlayer: false
+      });
+  }*/
+  try {
+    const session = await pullActiveSession(req.session.user.username, false);
+
+    if (session) {
+      console.log("resuming session, id=", session.session_id)
+      return res.render('pages/game', {
+        user: req.session.user,
+        session_id: session.session_id,
+        isTwoPlayer: false
+      });
+    } else {
+      const sessionIDs = await insertSessions(req.session.user.username, null);
+      console.log("created session, id=", sessionIDs[0])
+      return res.render('pages/game', {
+        user: req.session.user,
+        session_id: sessionIDs[0],
+        isTwoPlayer: false
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+app.get('/twoplayer', auth, async (req, res) => {
+  try {
+    const session = await pullActiveSession(req.session.user.username, true);
+    if (session){
+      return res.render('pages/game', {
+        user: req.session.user,
+        session_id: session.session_id,
+        isTwoPlayer: true,
+        opponent: session.opponent
+      });
+    } else {
+      return res.render('pages/lobby', { user: req.session.user})
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+app.get('/multiplayerredirect', auth, (req, res) =>{ // done so that the json in the dom always stores session id, not url param. Ask James
+  req.session.session_id = req.query.id;
+  res.redirect('/twoplayer');
+})
 app.get('/leaderboard', auth, (req, res) =>
   res.render('pages/leaderboard', {
     user: req.session.user,
@@ -395,13 +592,6 @@ app.get('/leaderboard', auth, (req, res) =>
 app.get('/faq', (req, res) =>
   res.render('pages/FAQ', {
     isFAQ: true
-  })
-);
-
-app.get('/singleplayer', auth, (req, res) =>
-  res.render('pages/SinglePlayer', {
-    user: req.session.user,
-    isSinglePlayer: true
   })
 );
 
@@ -523,11 +713,6 @@ app.get('/home', auth, (req, res) =>
     isHome: true})
 );
 
-app.get('/logout', auth, (req, res) => {
-  req.session.destroy();
-  res.redirect('/login');
-});
-
 //Updated the profile route to pull the user's game history and pass it to the template for rendering. The getUserGameHistory function is called with the current user's username, and the resulting game history is included in the data passed to the Profile template. 
 //If there's an error fetching the game history, it logs the error and renders the profile page with an empty game history array to prevent the page from breaking.
 app.get('/profile', auth, async (req, res) => {
@@ -554,49 +739,6 @@ app.get('/profile', auth, async (req, res) => {
       stats: {
         totalGames: 0,
         bestSingleScore: 0,
-        avgCompletion: "0.0",
-        wins: 0,
-        winRate: "0.0", 
-        totalScore: 0
-      }, 
-      ranks: {
-        singleScoreRank: 'N/A',
-        fastestTimeRank: 'N/A',
-        twoPlayerRank: 'N/A'
-      }
-    });
-  }
-});
-
-
-
-//Updated the profile route to pull the user's game history and pass it to the template for rendering. The getUserGameHistory function is called with the current user's username, and the resulting game history is included in the data passed to the Profile template. 
-//If there's an error fetching the game history, it logs the error and renders the profile page with an empty game history array to prevent the page from breaking.
-app.get('/profile', auth, async (req, res) => {
-  try {
-    const username = req.session.user.username;
-    const gameHistory = await getUserGameHistory(username);
-    const stats = await getUserStats(username);
-    const ranks = await getUserRankings(username);
-
-    res.render('pages/Profile', {
-      user: req.session.user,
-      isProfile: true,
-      gameHistory,
-      stats,
-      ranks
-    });
-  } catch (err) {
-    console.error('Profile route error:', err.message);
-
-    res.render('pages/Profile', {
-      user: req.session.user,
-      isProfile: true,
-      gameHistory: [],
-      stats: {
-        totalGames: 0,
-        bestSingleScore: 0,
-        avgCompletion: "0.0",
         wins: 0,
         winRate: "0.0", 
         totalScore: 0
@@ -726,43 +868,30 @@ app.post('/test-cleanup', async (req, res) => {
 
 // ── Save game session ────────────────────────────────────────────────────────
 app.post('/game-session', async (req, res) => {
-  const { time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_data } = req.body;
-  const username = req.session.user?.username ?? null;
+  const { session_id, time_seconds, puzzle_data, score } = req.body;
+  const username = req.session.user?.username ?? null; // null = guest
 
-  if (
-    typeof time_seconds !== 'number' || time_seconds <= 0 ||
-    typeof expected_time !== 'number' || expected_time <= 0 ||
-    typeof hints_used !== 'number' || hints_used < 0 ||
-    typeof bad_checks !== 'number' || bad_checks < 0 ||
-    typeof completion !== 'number' || completion < 0 || completion > 1
-  ) {
-    return res.status(400).json({ message: 'Invalid game data' });
+  if (typeof score !== 'number' || score < 0) {
+    return res.status(400).json({ message: 'Invalid score' });
+  }
+  if (typeof session_id !== 'number' || session_id < 1) {
+    return res.status(400).json({ message: 'Invalid session_id' });
   }
 
   try {
-    const puzzle_score = calculatePuzzleScore(
-      expected_time,
-      time_seconds,
-      completion,
-      hints_used,
-      bad_checks
-    )
     const row = await db.one(
-      `INSERT INTO game_sessions
-       (username, time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_score, puzzle_data)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING session_id, username, time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_score, completed_at`,
-      [
-        username,
-        time_seconds,
-        expected_time,
-        hints_used,
-        bad_checks,
-        completion,
-        puzzle_score,
-        puzzle_data ? JSON.stringify(puzzle_data) : null
-      ]
+      `UPDATE game_sessions
+       SET time_seconds = $1,
+           puzzle_data = $2,
+           score = $3,
+           completed_at = NOW()
+       WHERE session_id = $4
+         AND username = $5
+       RETURNING session_id, username, time_seconds, completed_at, puzzle_data, score`,
+      [time_seconds, puzzle_data, score, session_id, username]
     );
+
+    await finalizeMatchRatings(session_id);
 
     return res.status(201).json({ message: 'Saved', session: row });
   } catch (err) {
@@ -776,20 +905,78 @@ app.get('/api/leaderboard', async (req, res) => {
   try {
     const rows = await db.any(
       `SELECT COALESCE(username, 'Guest') AS username,
-              puzzle_score,
+              score,
               time_seconds,
-              hints_used,
-              bad_checks,
-              completion,
               completed_at
        FROM game_sessions
-       ORDER BY puzzle_score DESC
+       ORDER BY score DESC
        LIMIT 20`
     );
 
     return res.json(rows);
   } catch (err) {
     console.error('Leaderboard error:', err.message);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/leaderboard/twoplayer', async (req, res) => {
+  try {
+    const players = await db.any(
+      `SELECT username, rating
+       FROM users
+       WHERE username IS NOT NULL
+       ORDER BY rating DESC
+       LIMIT 20`
+    );
+
+    const rows = [];
+
+    for (const player of players) {
+      const games = await db.any(
+        `SELECT session_id, score, time_seconds, match_id
+         FROM game_sessions
+         WHERE username = $1
+           AND twoplayer = TRUE
+           AND completed_at IS NOT NULL`,
+        [player.username]
+      );
+
+      let wins = 0;
+
+      for (const game of games) {
+        const opponentGame = await db.oneOrNone(
+          `SELECT score, time_seconds
+           FROM game_sessions
+           WHERE match_id = $1
+             AND session_id <> $2
+           LIMIT 1`,
+          [game.match_id, game.session_id]
+        );
+
+        if (!opponentGame) continue;
+
+        if (Number(game.score) > Number(opponentGame.score)) {
+          wins++;
+        } else if (
+          Number(game.score) === Number(opponentGame.score) &&
+          Number(game.time_seconds) < Number(opponentGame.time_seconds)
+        ) {
+          wins++;
+        }
+      }
+
+      rows.push({
+        username: player.username,
+        rating: player.rating,
+        games_played: games.length,
+        wins
+      });
+    }
+
+    return res.json(rows);
+  } catch (err) {
+    console.error('Two-player leaderboard error:', err.message);
     return res.status(500).json({ message: 'Server error' });
   }
 });
@@ -1909,199 +2096,12 @@ app.get('/api/puzzle', (req, res) => {
     return res.status(500).json({ message: 'Failed to generate puzzle' });
   }
 });
-
-//new leaderboard endpoint
-// ── GET /api/leaderboard/twoplayer  (top 20 by cumulative two-player score) ──
-app.get('/api/leaderboard/twoplayer', async (req, res) => {
+app.get('/api/players', (req, res) => {
   try {
-    const rows = await db.any(
-      `SELECT
-         u.username,
-         u.player_rating,
-         COUNT(t.tp_session_id) AS games_played,
-         COALESCE(SUM(CASE WHEN t.is_winner THEN 1 ELSE 0 END), 0) AS wins
-       FROM users u
-       LEFT JOIN two_player_sessions t
-         ON u.username = t.username
-       GROUP BY u.username, u.player_rating
-       ORDER BY u.player_rating DESC, wins DESC
-       LIMIT 20`
-    );
-    return res.json(rows);
+    return res.json(Array.from(clients.keys()));
   } catch (err) {
-    console.error('TP leaderboard error:', err.message);
-    return res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// ── POST /two-player-session  (save one player's result from a 2P game) ──────
-// Body: { game_id, time_seconds, is_winner }
-// The score formula: MAX(0, 1000 - time_seconds) + (is_winner ? 200 : 0)
-app.post('/two-player-session', auth, async (req, res) => {
-  const {
-    game_id,
-    player_one,
-    player_two
-  } = req.body;
-
-  if (
-    !game_id ||
-    !player_one ||
-    !player_two ||
-    typeof player_one.username !== 'string' ||
-    typeof player_two.username !== 'string' ||
-    typeof player_one.time_seconds !== 'number' || player_one.time_seconds <= 0 ||
-    typeof player_two.time_seconds !== 'number' || player_two.time_seconds <= 0 ||
-    typeof player_one.expected_time !== 'number' || player_one.expected_time <= 0 ||
-    typeof player_two.expected_time !== 'number' || player_two.expected_time <= 0 ||
-    typeof player_one.hints_used !== 'number' || player_one.hints_used < 0 ||
-    typeof player_two.hints_used !== 'number' || player_two.hints_used < 0 ||
-    typeof player_one.bad_checks !== 'number' || player_one.bad_checks < 0 ||
-    typeof player_two.bad_checks !== 'number' || player_two.bad_checks < 0 ||
-    typeof player_one.completion !== 'number' || player_one.completion < 0 || player_one.completion > 1 ||
-    typeof player_two.completion !== 'number' || player_two.completion < 0 || player_two.completion > 1
-  ) {
-    return res.status(400).json({ message: 'Invalid input' });
-  }
-
-  try {
-    const playerOneScore = calculatePuzzleScore(
-      player_one.expected_time,
-      player_one.time_seconds,
-      player_one.completion,
-      player_one.hints_used,
-      player_one.bad_checks
-    );
-
-    const playerTwoScore = calculatePuzzleScore(
-      player_two.expected_time,
-      player_two.time_seconds,
-      player_two.completion,
-      player_two.hints_used,
-      player_two.bad_checks
-    );
-
-    const winner = determineWinner(
-      playerOneScore,
-      playerTwoScore,
-      player_one.time_seconds,
-      player_two.time_seconds
-    );
-
-    const playerOneWon = winner === 1;
-    const playerTwoWon = winner === 2;
-
-    const playerOneRatingBefore = await getPlayerRating(player_one.username);
-    const playerTwoRatingBefore = await getPlayerRating(player_two.username);
-
-    let playerOneRatingAfter = playerOneRatingBefore;
-    let playerTwoRatingAfter = playerTwoRatingBefore;
-
-    if (winner !== 0) {
-      const playerOneDelta = calculateRatingDelta(
-        playerOneRatingBefore,
-        playerTwoRatingBefore,
-        playerOneScore,
-        playerTwoScore,
-        playerOneWon
-      );
-
-      const playerTwoDelta = calculateRatingDelta(
-        playerTwoRatingBefore,
-        playerOneRatingBefore,
-        playerTwoScore,
-        playerOneScore,
-        playerTwoWon
-      );
-
-      playerOneRatingAfter = playerOneWon
-        ? playerOneRatingBefore + playerOneDelta
-        : playerOneRatingBefore - playerOneDelta;
-
-      playerTwoRatingAfter = playerTwoWon
-        ? playerTwoRatingBefore + playerTwoDelta
-        : playerTwoRatingBefore - playerTwoDelta;
-    }
-
-    await db.tx(async t => {
-      await t.none(
-        `UPDATE users
-         SET player_rating = $1
-         WHERE username = $2`,
-        [playerOneRatingAfter, player_one.username]
-      );
-
-      await t.none(
-        `UPDATE users
-         SET player_rating = $1
-         WHERE username = $2`,
-        [playerTwoRatingAfter, player_two.username]
-      );
-
-      await t.none(
-        `INSERT INTO two_player_sessions
-         (game_id, username, time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_score, is_winner, rating_before, rating_after)
-         VALUES
-         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-        [
-          game_id,
-          player_one.username,
-          player_one.time_seconds,
-          player_one.expected_time,
-          player_one.hints_used,
-          player_one.bad_checks,
-          player_one.completion,
-          playerOneScore,
-          playerOneWon,
-          playerOneRatingBefore,
-          playerOneRatingAfter
-        ]
-      );
-
-      await t.none(
-        `INSERT INTO two_player_sessions
-         (game_id, username, time_seconds, expected_time, hints_used, bad_checks, completion, puzzle_score, is_winner, rating_before, rating_after)
-         VALUES
-         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-        [
-          game_id,
-          player_two.username,
-          player_two.time_seconds,
-          player_two.expected_time,
-          player_two.hints_used,
-          player_two.bad_checks,
-          player_two.completion,
-          playerTwoScore,
-          playerTwoWon,
-          playerTwoRatingBefore,
-          playerTwoRatingAfter
-        ]
-      );
-    });
-
-    return res.status(201).json({
-      message: 'Saved',
-      result: {
-        winner,
-        player_one: {
-          username: player_one.username,
-          puzzle_score: playerOneScore,
-          is_winner: playerOneWon,
-          rating_before: playerOneRatingBefore,
-          rating_after: playerOneRatingAfter
-        },
-        player_two: {
-          username: player_two.username,
-          puzzle_score: playerTwoScore,
-          is_winner: playerTwoWon,
-          rating_before: playerTwoRatingBefore,
-          rating_after: playerTwoRatingAfter
-        }
-      }
-    });
-  } catch (err) {
-    console.error('Save 2P session error:', err.message);
-    return res.status(500).json({ message: 'Server error' });
+    console.error('Player retrieval error:', err.message);
+    return res.status(500).json({ message: 'Failed to retrieve list of connected players' });
   }
 });
 

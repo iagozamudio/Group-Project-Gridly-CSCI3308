@@ -110,7 +110,15 @@ Group meeting from 12:15-1:00
 --> Discussed distrobution of final workload
 --> Planning for UAT testing 
 
+Meeting with Kelechi - Monday 5:00-5:25 pm:
 
-
-
-
+--> Samra worked on profile page and db.
+--> Samra added display name
+--> Profile page now displays:
+  --> Points
+  --> Rank
+--> Samra added FAQ info to sidebar
+--> Multiplayer still needs to be merged
+--> various variable names need to be updated for new db
+--> Need to et live game updates working
+--> Meeting on Wednesday to show of final product
