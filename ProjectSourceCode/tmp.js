@@ -530,13 +530,13 @@ const pullActiveSession = async (username, isTwoPlayer)=>{
 }
 
 app.get('/singleplayer', auth, async (req, res) => {
-  if (req.session.session_id){
+  /*if (req.session.session_id){
     return res.render('pages/game', {
         user: req.session.user,
         session_id: req.session.session_id,
         isTwoPlayer: false
       });
-  }
+  }*/
   try {
     const session = await pullActiveSession(req.session.user.username, false);
 
