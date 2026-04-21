@@ -280,6 +280,61 @@ async function getPlayerRating(username) {
 // ── Get user game history (last 10 sessions) ─────────────────────────────────
 // This function retrieves the last 10 game sessions for a given user, combining both single-player and multiplayer sessions. It returns an array of session objects with details such as game type, score, time taken, completion status, and result (win/loss for multiplayer).
 
+async function finalizeMatchRatings(session_id) {
+  const currentSession = await db.oneOrNone(
+    `SELECT session_id, username, score, time_seconds, match_id, twoplayer
+     FROM game_sessions
+     WHERE session_id = $1`,
+    [session_id]
+  );
+
+  if (!currentSession || !currentSession.twoplayer || !currentSession.match_id) {
+    return;
+  }
+
+  const sessions = await db.any(
+    `SELECT session_id, username, score, time_seconds, completed_at
+     FROM game_sessions
+     WHERE match_id = $1`,
+    [currentSession.match_id]
+  );
+
+  if (sessions.length !== 2) return;
+
+  const playerOne = sessions[0];
+  const playerTwo = sessions[1];
+
+  if (!playerOne.completed_at || !playerTwo.completed_at) {
+    return;
+  }
+
+  const playerOneRating = await getPlayerRating(playerOne.username);
+  const playerTwoRating = await getPlayerRating(playerTwo.username);
+
+  const result = updateRatings(
+    playerOneRating,
+    playerTwoRating,
+    Number(playerOne.score),
+    Number(playerTwo.score),
+    Number(playerOne.time_seconds),
+    Number(playerTwo.time_seconds)
+  );
+
+  await db.none(
+    `UPDATE users
+     SET rating = $1
+     WHERE username = $2`,
+    [result.playerOne.after, playerOne.username]
+  );
+
+  await db.none(
+    `UPDATE users
+     SET rating = $1
+     WHERE username = $2`,
+    [result.playerTwo.after, playerTwo.username]
+  );
+}
+
 async function getUserGameHistory(username){
   const query = `SELECT 
   CASE WHEN twoplayer THEN 'multi' ELSE 'single' END AS game_type,
@@ -836,6 +891,7 @@ app.post('/game-session', async (req, res) => {
       [time_seconds, puzzle_data, score, session_id, username]
     );
 
+    await finalizeMatchRatings(session_id);
 
     return res.status(201).json({ message: 'Saved', session: row });
   } catch (err) {
