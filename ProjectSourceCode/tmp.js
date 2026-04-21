@@ -396,13 +396,13 @@ async function getUserGameHistory(username) {
 async function getUserStats(username) {
   const singlePlayerQuery = `
     SELECT
-      COUNT(*) AS num_of_single_games,
-      COALESCE(MAX(score), 0) AS best_single_score,
-      COALESCE(SUM(score), 0) AS single_total_points
+      COUNT(*) FILTER (WHERE twoplayer = FALSE AND completed_at IS NOT NULL) AS num_of_single_games,
+      COALESCE(MAX(score) FILTER (WHERE twoplayer = FALSE AND completed_at IS NOT NULL), 0) AS best_single_score,
+      COALESCE(SUM(score) FILTER (WHERE twoplayer = FALSE AND completed_at IS NOT NULL), 0) AS single_total_points,
+      COUNT(*) FILTER (WHERE completed_at IS NOT NULL) AS completed_games,
+      COUNT(*) AS total_started_games
     FROM game_sessions
     WHERE username = $1
-      AND twoplayer = FALSE
-      AND completed_at IS NOT NULL
   `;
 
   const multiPlayerQuery = `
@@ -462,19 +462,27 @@ async function getUserStats(username) {
     const winRate = totalMultiGames > 0 ? ((wins / totalMultiGames) * 100).toFixed(1) : "0.0";
     const totalScore = Number(singlePlayerStats.single_total_points) + multiTotalPoints;
 
+    const completedGames = Number(singlePlayerStats.completed_games);
+    const totalStartedGames = Number(singlePlayerStats.total_started_games);
+    const avgCompletion = totalStartedGames > 0
+      ? ((completedGames / totalStartedGames) * 100).toFixed(1)
+      : "0.0";
+
     return {
       totalGames,
       bestSingleScore: Number(singlePlayerStats.best_single_score).toFixed(0),
       wins,
       winRate,
       totalScore: totalScore.toFixed(0),
-      rating: Number(ratingRow.rating)
+      rating: Number(ratingRow.rating),
+      avgCompletion
     };
   } catch (err) {
     console.error('Error fetching user stats:', err.message);
     throw err;
   }
 }
+
 
 // ── Get user player rankings ─────────────────────────────────
 async function getUserRankings(username) {
