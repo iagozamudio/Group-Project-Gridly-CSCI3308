@@ -38,9 +38,9 @@ function formatTime(sec) {
 }
 
 function calculatePuzzleScore(expected_time, time_seconds, completion, hints_used, bad_checks) {
-  const base = 1500;
+  const base = 1000;
   const timeFactor = expected_time / Math.max(1, time_seconds);
-  const penalty = 50 * hints_used + 10 * bad_checks;
+  const penalty = 50 * hints_used + 25 * bad_checks;
   const puzzleScore = base * timeFactor * completion - penalty;
   return Math.max(0, Math.floor(puzzleScore));
 }
@@ -563,7 +563,7 @@ function showWinPopup(time, score) {
     `;
 
     popup.innerHTML = `
-        <h2 style="margin: 0 0 8px; font-size: 2rem; letter-spacing: 2px;">YOU WIN!</h2>
+        <h2 style="margin: 0 0 8px; font-size: 2rem; letter-spacing: 2px;">WELL DONE!</h2>
         <p style="margin: 0 0 16px; font-size: 1rem; opacity: 0.7;">Puzzle complete</p>
         <div style="font-size: 2.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 12px;">${time}</div>
         <div style="font-size: 1.4rem; font-weight: bold; margin-bottom: 32px;">Score: ${score}</div>

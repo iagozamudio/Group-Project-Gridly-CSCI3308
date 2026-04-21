@@ -29,14 +29,12 @@ const clients = new Map();
 function determineWinner(playerOneScore, playerTwoScore, playerOneTime, playerTwoTime) {
   if (playerOneScore > playerTwoScore) return 1;
   if (playerTwoScore > playerOneScore) return 2;
-  if (playerOneTime < playerTwoTime) return 1;
-  if (playerTwoTime < playerOneTime) return 2;
   return 0;
 }
 
 function calculateRating(playerRating, opponentRating, playerScore, opponentScore, didWin) {
   const scoreDiff = Math.abs(playerScore - opponentScore);
-  let delta = Math.max(10, Math.round(scoreDiff * 0.1));
+  let delta = Math.max(10, Math.round(scoreDiff * 0.01));
 
   if (didWin && playerRating < opponentRating) {
     delta += Math.round((opponentRating - playerRating) * 0.05);
