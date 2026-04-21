@@ -335,37 +335,36 @@ async function finalizeMatchRatings(session_id) {
   );
 }
 
-async function getUserGameHistory(username){
-  const query = `SELECT 
-  CASE WHEN twoplayer THEN 'multi' ELSE 'single' END AS game_type,
-  'single' AS game_type,
-  session_id AS game_id,
-  score,
-  time_seconds,
-  completed_at,
-  NULL AS result
-FROM game_sessions
-WHERE username = $1
-ORDER BY completed_at DESC
-LIMIT 10`;
-  
-//The try and catch block is used for nay error handling. Is it passes, we create a variable called history and assign it the value of the query result. 
-//Teh funciton shoud return a  
-    try {
-      const history = await db.any(query, [username]);
-      for (const game of history){
-        if (game.game_type === 'multi'){
-      const opponentGame = await db.oneOrNone(
+async function getUserGameHistory(username) {
+  const query = `
+    SELECT
+      CASE WHEN twoplayer THEN 'multi' ELSE 'single' END AS game_type,
+      session_id AS game_id,
+      match_id,
+      score,
+      time_seconds,
+      completed_at,
+      NULL AS result
+    FROM game_sessions
+    WHERE username = $1
+      AND completed_at IS NOT NULL
+    ORDER BY completed_at DESC
+    LIMIT 10
+  `;
+
+  try {
+    const history = await db.any(query, [username]);
+
+    for (const game of history) {
+      if (game.game_type === 'multi' && game.match_id) {
+        const opponentGame = await db.oneOrNone(
           `SELECT score, time_seconds
            FROM game_sessions
-           WHERE match_id = (
-             SELECT match_id
-             FROM game_sessions
-             WHERE session_id = $1
-           )
-           AND session_id <> $1
+           WHERE match_id = $1
+             AND username <> $2
+             AND completed_at IS NOT NULL
            LIMIT 1`,
-          [game.game_id]
+          [game.match_id, username]
         );
 
         if (opponentGame) {
@@ -389,8 +388,7 @@ LIMIT 10`;
     console.error('Error fetching game history:', err.message);
     throw err;
   }
-
-}; 
+}
 
 
 //COALESCE is a SQL function that returns the first non-NULL value.
@@ -400,21 +398,23 @@ async function getUserStats(username) {
     SELECT
       COUNT(*) AS num_of_single_games,
       COALESCE(MAX(score), 0) AS best_single_score,
-      COALESCE(SUM(score), 0) AS total_points
+      COALESCE(SUM(score), 0) AS single_total_points
     FROM game_sessions
     WHERE username = $1
+      AND twoplayer = FALSE
+      AND completed_at IS NOT NULL
   `;
 
   const multiPlayerQuery = `
     SELECT
       session_id,
+      match_id,
       score,
-      time_seconds,
-      match_id
+      time_seconds
     FROM game_sessions
     WHERE username = $1
-        AND completed_at IS NOT NULL
-        AND twoplayer = TRUE
+      AND twoplayer = TRUE
+      AND completed_at IS NOT NULL
   `;
 
   const ratingQuery = `
@@ -425,24 +425,49 @@ async function getUserStats(username) {
 
   try {
     const singlePlayerStats = await db.one(singlePlayerQuery, [username]);
-    const multiPlayerStats = await db.any(multiPlayerQuery, [username]);
+    const multiPlayerGames = await db.any(multiPlayerQuery, [username]);
     const ratingRow = await db.one(ratingQuery, [username]);
 
-    const totalGames =
-      Number(singlePlayerStats.num_of_single_games) +
-      Number(multiPlayerStats.num_of_multi_games);
+    let wins = 0;
+    let multiTotalPoints = 0;
 
-    const wins = Number(multiPlayerStats.num_wins);
-    const multiGames = Number(multiPlayerStats.num_of_multi_games);
-    const winRate = multiGames > 0 ? ((wins / multiGames) * 100).toFixed(1) : "0.0";
-    const totalScore = Number(singlePlayerStats.total_points).toFixed(0);
+    for (const game of multiPlayerGames) {
+      multiTotalPoints += Number(game.score);
+
+      const opponentGame = await db.oneOrNone(
+        `SELECT score, time_seconds
+         FROM game_sessions
+         WHERE match_id = $1
+           AND username <> $2
+           AND completed_at IS NOT NULL
+         LIMIT 1`,
+        [game.match_id, username]
+      );
+
+      if (!opponentGame) continue;
+
+      if (Number(game.score) > Number(opponentGame.score)) {
+        wins++;
+      } else if (
+        Number(game.score) === Number(opponentGame.score) &&
+        Number(game.time_seconds) < Number(opponentGame.time_seconds)
+      ) {
+        wins++;
+      }
+    }
+
+    const totalSingleGames = Number(singlePlayerStats.num_of_single_games);
+    const totalMultiGames = multiPlayerGames.length;
+    const totalGames = totalSingleGames + totalMultiGames;
+    const winRate = totalMultiGames > 0 ? ((wins / totalMultiGames) * 100).toFixed(1) : "0.0";
+    const totalScore = Number(singlePlayerStats.single_total_points) + multiTotalPoints;
 
     return {
       totalGames,
       bestSingleScore: Number(singlePlayerStats.best_single_score).toFixed(0),
       wins,
       winRate,
-      totalScore,
+      totalScore: totalScore.toFixed(0),
       rating: Number(ratingRow.rating)
     };
   } catch (err) {
