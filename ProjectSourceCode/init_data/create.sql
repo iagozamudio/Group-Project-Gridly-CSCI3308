@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(50) PRIMARY KEY,
   password VARCHAR(255) NOT NULL,
-  player_rating INT NOT NULL DEFAULT 1000
+  rating INTEGER NOT NULL DEFAULT 1000
 );
 
 -- Profile image column (optional with default)
@@ -42,48 +42,28 @@ CREATE TABLE IF NOT EXISTS security_questions (
 -- ================= SINGLE PLAYER SESSIONS =================
 CREATE TABLE IF NOT EXISTS game_sessions (
   session_id   SERIAL PRIMARY KEY,
+  match_id VARCHAR(50),
   username     VARCHAR(50),
-  time_seconds INT NOT NULL,
-  expected_time  INT,
-  hints_used     INT DEFAULT 0,
-  bad_checks     INT DEFAULT 0,
-  completion     DECIMAL(5,4) DEFAULT 0,
-  puzzle_score   DECIMAL(10,2) DEFAULT 0,
-  puzzle_data  JSONB,
-  completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  puzzle_data  JSONB NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ DEFAULT NULL,
+  time_seconds INTEGER DEFAULT 0,
+  score INTEGER DEFAULT 0,
+  twoplayer BOOLEAN DEFAULT FALSE,
+  opponent VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL,
   CONSTRAINT fk_game_sessions_user FOREIGN KEY(username)
     REFERENCES users(username)
     ON DELETE SET NULL
-    ON UPDATE CASCADE
-);
-
-
--- ================= TWO PLAYER SESSIONS =================
-CREATE TABLE IF NOT EXISTS two_player_sessions (
-  tp_session_id SERIAL PRIMARY KEY,
-  game_id       VARCHAR(64) NOT NULL,
-  username      VARCHAR(50),
-  time_seconds  INT NOT NULL,
-  expected_time INT NOT NULL,
-  hints_used INT NOT NULL DEFAULT 0,
-  bad_checks INT NOT NULL DEFAULT 0,
-  completion DECIMAL(5,4) NOT NULL DEFAULT 0,
-  puzzle_score DECIMAL(10,2) NOT NULL DEFAULT 0,
-  is_winner     BOOLEAN NOT NULL DEFAULT FALSE,
-  rating_before INT NOT NULL,
-  rating_after INT NOT NULL,
-  completed_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT fk_two_player_sessions_user FOREIGN KEY(username)
+    ON UPDATE CASCADE,
+    CONSTRAINT fk_game_sessions_opponent FOREIGN KEY (opponent)
     REFERENCES users(username)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 );
 
-
 -- ================= INDEXES =================
-CREATE INDEX IF NOT EXISTS idx_tp_sessions_game_id  ON two_player_sessions(game_id);
-CREATE INDEX IF NOT EXISTS idx_tp_sessions_username ON two_player_sessions(username);
 CREATE INDEX IF NOT EXISTS idx_gs_username          ON game_sessions(username);
 CREATE INDEX IF NOT EXISTS idx_gs_time              ON game_sessions(time_seconds);
+CREATE INDEX IF NOT EXISTS idx_gs_match_id ON game_sessions(match_id);
 
 

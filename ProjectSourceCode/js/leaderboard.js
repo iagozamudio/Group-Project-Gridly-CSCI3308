@@ -61,7 +61,7 @@ async function loadSinglePlayer() {
     const username = row.username || 'Guest';
     const date = formatDate(row.completed_at);
     const time = formatTime(row.time_seconds);
-    const score = formatScore(row.puzzle_score);
+    const score = formatScore(row.score);
     const hintsUsed = row.hints_used ?? 0;
 
     return ` 
@@ -71,9 +71,6 @@ async function loadSinglePlayer() {
             <strong>#${rank}</strong> ${username}
             <small class="text-muted ms-2">${date}</small>
           </span>
-          <div class="small text-muted">
-            Time: ${time} | Hints: ${hintsUsed}
-          </div>
         </div>
         <span class="badge ${badge} rounded-pill">${score}</span>
       </div>`;
@@ -120,7 +117,7 @@ async function loadTwoPlayer() {
             <strong>#${i + 1}</strong> ${row.username || 'Guest'}
             <small class="text-muted ms-2">${row.games_played} game${row.games_played !== 1 ? 's' : ''} · ${row.wins} W</small>
           </span>
-          <span class="badge ${badge} rounded-pill">${row.player_rating} pts</span>
+          <span class="badge ${badge} rounded-pill">${row.rating} pts</span>
         </div>`;
     }).join('');
 
