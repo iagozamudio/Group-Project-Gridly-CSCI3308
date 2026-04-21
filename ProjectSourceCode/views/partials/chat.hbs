@@ -9,6 +9,12 @@
 
     <button id="closeChatBtn" class="close-chat">✖</button>
 
+    {{!-- ADDED for multiplayer progress --}}
+    {{!-- opponentProgress is hidden by default; chat.js reveals it when a --}}
+    {{!-- "progress" or "win" message arrives over the WebSocket.          --}}
+    <div id="opponentProgress" class="opponent-progress" style="display:none;"></div>
+    {{!-- END ADDED for multiplayer progress --}}
+
     <ul class="chat" id="chatbox"></ul>
 
     <form id="sendMessageForm" class="chat-form">

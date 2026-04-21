@@ -158,7 +158,26 @@ wss.on("connection", (ws, req) => {
         } else if (status == "rejecting"){ // rejection being sent back from recipient
 
         }
+
+      // ADDED for multiplayer progress — forward progress/win messages to opponent
+      } else if (messageJSON.type === "progress") {
+        // Forward { type:"progress", filled:X, total:Y } to the named recipient.
+        if (recipient && recipient.readyState === WebSocket.OPEN) {
+          recipient.send(JSON.stringify({
+            type:   "progress",
+            filled: messageJSON.filled,
+            total:  messageJSON.total
+          }));
+        }
+
+      } else if (messageJSON.type === "win") {
+        // Forward { type:"win" } to the named recipient so they see the loss banner.
+        if (recipient && recipient.readyState === WebSocket.OPEN) {
+          recipient.send(JSON.stringify({ type: "win" }));
+        }
       }
+      // END ADDED for multiplayer progress
+
       console.log("Received:", message.toString());
     });
 

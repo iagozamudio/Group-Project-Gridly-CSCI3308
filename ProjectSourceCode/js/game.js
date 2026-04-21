@@ -125,6 +125,44 @@ let selectedCell = null;
 let selectedDir  = 'across';
 const session_id = document.getElementById("session_id").textContent;
 
+// ADDED for multiplayer progress
+// isTwoPlayer is set inline in game.hbs via the `opponent` script block;
+// we treat a non-empty opponent string as "two-player mode".
+// ws is declared in chat.js (loaded before game.js via the chat partial).
+// lastSentFilled tracks the last value we broadcast so we don't spam identical messages.
+let lastSentFilled = -1;
+
+/**
+ * sendProgress()
+ * Computes the number of correctly filled cells and, if it has changed since
+ * the last send, broadcasts { type:"progress", filled:X, total:Y } to the
+ * opponent through the shared WebSocket opened in chat.js.
+ *
+ * Only runs when:
+ *  - opponent is a non-empty string (two-player game)
+ *  - the WebSocket (ws) is open
+ *  - the count has actually changed
+ */
+function sendProgress() {
+  // ADDED for multiplayer progress
+  if (typeof opponent === 'undefined' || !opponent) return;
+  if (typeof ws === 'undefined' || ws.readyState !== WebSocket.OPEN) return;
+
+  const filled = countCorrectLetters();
+  const total  = total_letter_cells;
+
+  if (filled === lastSentFilled) return; // nothing new to report
+  lastSentFilled = filled;
+
+  ws.send(JSON.stringify({
+    type:      "progress",
+    recipient: opponent,
+    filled,
+    total
+  }));
+}
+// END ADDED for multiplayer progress
+
 // Boot
 async function init() {
   let puzzle;
@@ -372,6 +410,7 @@ function onInput(e, r, c) {
   input.closest(".cell").classList.remove("correct", "incorrect");
   refreshScore();
   checkWin();
+  sendProgress(); // ADDED for multiplayer progress — notify opponent of new fill count
 
   if (input.value) {
     const nr = selectedDir === "down" ? r + 1 : r;
@@ -455,6 +494,7 @@ function checkPuzzle(scope) {
         }
     }
     refreshScore();
+    sendProgress(); // ADDED for multiplayer progress — check may have revealed correct cells
 }
 
 // Clear cell
@@ -466,6 +506,7 @@ function eraseSelected() {
         input.value = "";
         input.closest(".cell").classList.remove("correct", "incorrect");
         refreshScore();
+        sendProgress(); // ADDED for multiplayer progress — erasure changes fill count
     }
 }
 
@@ -482,6 +523,7 @@ function revealHint() {
         input.closest(".cell").classList.add("correct");
         input.closest(".cell").classList.remove("incorrect");
         refreshScore();
+        sendProgress(); // ADDED for multiplayer progress — hint fills a correct cell
     }
 }
 
@@ -513,6 +555,13 @@ function checkWin() {
     clearInterval(timerInterval);
     completionTime = formatTime(seconds);
     refreshScore();
+
+    // ADDED for multiplayer progress — tell the opponent we finished
+    if (typeof opponent !== 'undefined' && opponent &&
+        typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "win", recipient: opponent }));
+    }
+    // END ADDED for multiplayer progress
 
     // Serialize the randomly generated puzzle so it can be saved to the DB
     const puzzleData = {
