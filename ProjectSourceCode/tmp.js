@@ -104,25 +104,7 @@ wss.on("connection", (ws, req) => {
       if (messageJSON.type === "chat") { 
        // pull recipient socket instance from map
 
-        if (messageJSON.recipient == "*") { // temporary send to all users case; once multiplayer is ready delete
-          const outgoing = {
-            type: "chat",
-            sender: username,
-            text: messageJSON.text
-          };
-          for (const [recipientUsername, client] of clients.entries()) { // send to all connected users
-            if (recipientUsername != username) {
-              client.send(JSON.stringify(outgoing));
-            }
-          };
-          const successMessage = { // success msg to return to sender
-            type: "chat",
-            sender: username,
-            text: messageJSON.text,
-            status: "success"
-          };
-          ws.send(JSON.stringify(successMessage));
-        } else if (!recipient) { // if recipient socket not found in clients map (e.g. they have disconnected or dont exist)
+        if (!recipient) { // if recipient socket not found in clients map (e.g. they have disconnected or dont exist)
           ws.send(JSON.stringify({
             type: "chat",
             status: "failure",
@@ -531,7 +513,8 @@ app.get('/twoplayer', auth, async (req, res) => {
       return res.render('pages/game', {
         user: req.session.user,
         session_id: session.session_id,
-        isTwoPlayer: true
+        isTwoPlayer: true,
+        opponent: session.opponent
       });
     } else {
       return res.render('pages/lobby', { user: req.session.user})
