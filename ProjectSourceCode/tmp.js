@@ -120,8 +120,7 @@ wss.on("connection", (ws, req) => {
             type: "chat",
             sender: username,
             text: messageJSON.text
-          };
-
+          }
           recipient.send(JSON.stringify(messageToRecipient));
           const successMessage = {
             type: "chat",
@@ -135,7 +134,15 @@ wss.on("connection", (ws, req) => {
         console.log("challenge recieved")
         const status = messageJSON.status;
         if (status == "sending"){ // challenge being sent from one user to another
-          recipient.send(JSON.stringify(messageJSON));
+          if (!recipient) {
+            ws.send(JSON.stringify({
+              type: "challenge",
+              status: "failure",
+              text: "Recipient not connected"
+            }));
+          } else {
+            recipient.send(JSON.stringify(messageJSON));
+          }
           console.log("sending challenge")
         } else if (status == "accepting"){ // acceptance being sent back from recipient
           insertSessions(messageJSON.recipient, username).then(sessionIDs =>{
@@ -151,8 +158,16 @@ wss.on("connection", (ws, req) => {
               ...response,
               session_id: sessionIDs[1]
             }
+            if (!recipient) {
+              ws.send(JSON.stringify({
+                type: "challenge",
+                status: "failure",
+                text: "Recipient not connected"
+              }));
+            } else {
+              recipient.send(JSON.stringify(response1));
+            }
             ws.send(JSON.stringify(response2))
-            recipient.send(JSON.stringify(response1))
           }).catch(console.error);
           
         } else if (status == "rejecting"){ // rejection being sent back from recipient
