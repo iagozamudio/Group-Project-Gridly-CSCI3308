@@ -1,44 +1,71 @@
-
 {{>navbar}}
 <div class="container py-5">
 
-    <!-- Welcome -->
-    <div class="mb-5 text-center">
-        <img src="/img/logo.png" alt="Gridly logo" class="img-fluid" style="max-width: 400px;">
+  <div class="text-center mb-5">
+    <img src="/img/logo.png" alt="Gridly logo" class="img-fluid" style="max-width: 320px;">
+  </div>
+
+  <div class="row justify-content-center align-items-stretch g-4">
+
+    <div class="col-lg-7">
+      <div class="p-5 rounded-4 shadow-lg h-100"
+           style="background: linear-gradient(135deg, #1f1f1f 0%, #2d2d2d 55%, #3a3a3a 100%); border: 1px solid #4a4a4a;">
+
+        <p class="text-uppercase text-secondary mb-2" style="letter-spacing: 2px;">Welcome Back</p>
+
+        <h1 class="display-5 fw-bold text-white mb-2">
+          {{#if user.display_name}}{{user.display_name}}{{else}}{{user.username}}{{/if}} 👋
+        </h1>
+
+        <p class="text-secondary fs-5 mb-4">
+          Ready for another round of Gridly? Jump into a solo puzzle or challenge someone head-to-head.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3">
+          <a href="/singleplayer" class="btn btn-success btn-lg px-4 py-3" style="min-width: 220px; border-radius: 14px;">
+            👤 Single Player
+          </a>
+
+          <a href="/twoplayer" class="btn btn-outline-light btn-lg px-4 py-3" style="min-width: 220px; border-radius: 14px;">
+            👥 Two Player
+          </a>
+        </div>
+      </div>
     </div>
 
-    <main class="d-flex justify-content-center gap-5">
+    <div class="col-lg-4">
+      <div class="p-4 rounded-4 shadow-lg h-100 text-white"
+           style="background: linear-gradient(180deg, #2a2a2a 0%, #202020 100%); border: 1px solid #4a4a4a;">
 
-        <!-- Left section -->
-        <div class="d-flex flex-column align-items-center gap-3">
-            <h2>Welcome, {{user.username}} 👋</h2>
-            <!-- Play Now button -->
-            <a href="/singleplayer" class="btn btn-success btn-lg mt-2" style="min-width: 200px;">
-                👤 Single Player
-            </a>
-            <a href="/twoplayer" class="btn btn-success btn-lg mt-2" style="min-width: 200px;">
-                👥 Two Player
-            </a>
+        <h3 class="fw-bold mb-4">Player Snapshot</h3>
+
+        <div class="d-flex flex-column gap-3">
+
+          <div class="rounded-3 p-3" style="background-color: rgba(255,255,255,0.05);">
+            <div class="text-secondary small text-uppercase">Display Name</div>
+            <div class="fs-4 fw-semibold">
+              {{#if user.display_name}}{{user.display_name}}{{else}}{{user.username}}{{/if}}
+            </div>
+          </div>
+
+          <div class="rounded-3 p-3" style="background-color: rgba(255,255,255,0.05);">
+            <div class="text-secondary small text-uppercase">Username</div>
+            <div class="fs-5">@{{user.username}}</div>
+          </div>
+
+          <div class="rounded-3 p-3" style="background-color: rgba(255,255,255,0.05);">
+            <div class="text-secondary small text-uppercase">Status</div>
+            <div class="fs-5">Ready to Play</div>
+          </div>
+
         </div>
-
-        <!-- Right section (user stats card) -->
-        <div class="d-flex flex-column align-items-center">
-
-           <div class="card shadow p-3 text-white" style="width: 300px; height: 120px; background-color: #3b3b3b; border-radius: 12px;">
-
-        <div class="d-flex flex-column gap-2" style="font-size: 20px;">
-            <span>🔥 5 day streak</span>
-            <span>🏆 1380 elo</span>
-        </div>
-
+      </div>
     </div>
 
-        </div>
-
-    </main>
+  </div>
 
 </div>
-<script id="user-data" type="application/json">
-    {{{json user}}}
-</script>
 
+<script id="user-data" type="application/json">
+  {{{json user}}}
+</script>
