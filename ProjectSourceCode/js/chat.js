@@ -71,3 +71,18 @@ const addError = (errorMsg) => {
   errorContainer.appendChild(newError);
 }
 
+const chatContainer = document.getElementById("chatContainer");
+const toggleBtn = document.getElementById("chatToggleBtn");
+const closeBtn = document.getElementById("closeChatBtn");
+
+toggleBtn.style.display = "none";
+
+closeBtn.addEventListener("click", () => {
+    chatContainer.style.display = "none";
+    toggleBtn.style.display = "block";
+});
+
+toggleBtn.addEventListener("click", () => {
+    chatContainer.style.display = "flex";
+    toggleBtn.style.display = "none";
+});

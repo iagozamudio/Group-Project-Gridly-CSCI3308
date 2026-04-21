@@ -1,3 +1,4 @@
+
 <!-- TOP NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-black">
   <div class="container-fluid">
@@ -16,19 +17,105 @@
         <a class="nav-link {{#if isProfile}}text-success{{else}}text-white{{/if}}" href="/profile">Profile</a>
       </div>
 
-      <!-- Settings button -->
-      <button class="btn btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#settingsSidebar">
-        ⚙️
-      </button>
+      <!-- FAQ + Settings buttons -->
+      <div class="d-flex gap-2">
+        <button
+          class="btn btn-outline-light"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#faqSidebar"
+          aria-controls="faqSidebar"
+        >
+          ?
+        </button>
+
+        <button
+          class="btn btn-outline-light"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#settingsSidebar"
+          aria-controls="settingsSidebar"
+        >
+          ⚙️
+        </button>
+      </div>
     </div>
   </div>
 </nav>
 
-<!-- SIDE SETTINGS PANEL -->
-<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="settingsSidebar">
+<!-- FAQ SIDEBAR -->
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="faqSidebar" aria-labelledby="faqSidebarLabel">
   <div class="offcanvas-header">
-    <h5 class="offcanvas-title">Settings</h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    <h5 class="offcanvas-title" id="faqSidebarLabel">FAQ</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <div class="accordion" id="faqAccordion">
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="faq-q1">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq-a1">
+            What is Gridly?
+          </button>
+        </h2>
+        <div id="faq-a1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            Gridly is a crossword game platform where players solve puzzles, earn points, and track rankings.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="faq-q2">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-a2">
+            How do I earn points?
+          </button>
+        </h2>
+        <div id="faq-a2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            Points are earned by solving puzzles correctly and quickly. Faster completion and better accuracy lead to better scores.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="faq-q3">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-a3">
+            How does ranking work?
+          </button>
+        </h2>
+        <div id="faq-a3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            Rankings are based on puzzle performance, including score, completion time, and multiplayer results.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="faq-q4">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-a4">
+            What do hints and checks do?
+          </button>
+        </h2>
+        <div id="faq-a4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            Hints help reveal information in the puzzle, while checks help verify whether your entries are correct.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <a href="/faq" class="btn btn-outline-light w-100 mt-3">Open Full FAQ Page</a>
+  </div>
+</div>
+
+<!-- SETTINGS SIDEBAR -->
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="settingsSidebar" aria-labelledby="settingsSidebarLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="settingsSidebarLabel">Settings</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
 
   <div class="offcanvas-body">
