@@ -12,17 +12,24 @@ const http = require('http');
 const WebSocket = require('ws');
 const { receiveMessageOnPort } = require('worker_threads');
 
+//changeds for render
 const sessionParser = session({
-  secret: "your-secret",
+  secret: process.env.SESSION_SECRET || "your-secret",
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',   // sends cookie only over HTTPS
+    sameSite: 'lax',
+    httpOnly: true
+  }
 });
-
+//end of changes
 
 const app  = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server, path: '/ws' });
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; //changed to allow render to set port
+app.set('trust proxy', 1); //allow render
 
 const clients = new Map();
 

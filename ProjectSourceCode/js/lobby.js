@@ -1,6 +1,10 @@
 let refreshButton;
 let challengeList;
-const ws = new WebSocket('ws://localhost:3000/ws');
+//Code fix for websocket on render
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+const ws = new WebSocket(wsUrl);
+//old code - untouched 
 const user = JSON.parse(document.getElementById("user-data").textContent)
 
 ws.onopen = () => {
