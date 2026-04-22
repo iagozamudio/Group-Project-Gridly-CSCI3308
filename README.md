@@ -1,10 +1,10 @@
-# 🧩 Gridly — Competitive Crossword Puzzle Platform
+# Gridly — Competitive Crossword Puzzle Platform
 
 Gridly is a web-based crossword puzzle game where players can solve procedurally generated crossword puzzles in single-player mode or compete head-to-head against friends in real-time multiplayer matches. Players earn points based on speed and hints used, track their rankings on the leaderboard, and manage their profiles over time.
 
 ---
 
-## 👥 Contributors
+## Contributors
 
 | Name | GitHub Username |
 |------|----------------|
@@ -15,7 +15,7 @@ Gridly is a web-based crossword puzzle game where players can solve procedurally
 | Thabo Kelebeng | @JoyfulTom |
 | Xander Chisholm | @leBronzo1 |
 
-## 🛠 Technology Stack
+## Technology Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -32,7 +32,7 @@ Gridly is a web-based crossword puzzle game where players can solve procedurally
 
 ---
 
-## ✅ Prerequisites
+## Prerequisites
 
 Before running the application, make sure you have the following installed:
 
@@ -43,7 +43,7 @@ Before running the application, make sure you have the following installed:
 
 ---
 
-## ⚙️ Environment Setup
+## Environment Setup
 
 Before running the app, create a `.env` file inside the `ProjectSourceCode/` directory with the following variables:
 
@@ -55,11 +55,11 @@ SESSION_SECRET=your_session_secret
 NODE_ENV=development
 ```
 
-> ⚠️ Never commit your `.env` file — it is already listed in `.gitignore`.
+>  Never commit your `.env` file — it is already listed in `.gitignore`.
 
 ---
 
-## 🚀 How to Run the Application Locally
+##  How to Run the Application Locally
 
 1. **Clone the repository:**
    ```bash
@@ -84,7 +84,7 @@ NODE_ENV=development
    docker compose down
    ```
 
-## 🧪 How to Run the Tests
+##  How to Run the Tests
 
 Tests are written using **Mocha** and **Chai** and run automatically when the Docker container starts (`npm run testandrun`).
 
@@ -102,7 +102,7 @@ Test files are located in `ProjectSourceCode/test/server.spec.js` and cover:
 
 ---
 
-## 🌐 Deployed Application
+## Deployed Application
 
 > 🔗 **https://group-project-gridly-csci3308.onrender.com**
 
@@ -110,7 +110,7 @@ The application is deployed on [Render](https://render.com). Visit the link abov
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Group-Project-Gridly-CSCI3308/
@@ -136,7 +136,7 @@ Group-Project-Gridly-CSCI3308/
 
 ---
 
-## 🎮 Features
+## Features
 
 - **Single Player Mode** — Solve a procedurally generated 5×5 crossword puzzle with a live timer and scoring
 - **Two-Player Mode** — Challenge another online player to a real-time crossword race via WebSockets
