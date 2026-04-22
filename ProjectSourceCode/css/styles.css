@@ -87,3 +87,8 @@ footer {
 .challenge-list li:hover {
     background-color: #383838;
 }
+
+body {
+  background: url('/img/testbackground.png') no-repeat center center fixed;
+  background-size: cover;
+}
