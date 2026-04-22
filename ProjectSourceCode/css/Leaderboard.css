@@ -230,3 +230,9 @@ ul {
     transform: scale(1.3);
     transform-origin: top center;
 }
+
+.tab-pane {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
