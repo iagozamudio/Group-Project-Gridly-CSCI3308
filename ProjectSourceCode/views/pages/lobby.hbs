@@ -1,12 +1,19 @@
-<form id="challengeForm">
-    Select your opponent:
-    <select name="player" id="playerDropdown">
-    </select>
-    <button id="refresh">⟳</button>
-    <button type="submit" id="challenge">challenge</button>
+{{>navbar}}
+<form id="challengeForm" class="challenge-form">
+    <label class="form-label">Select your opponent:</label>
+
+    <div class="d-flex gap-2">
+        <select name="player" id="playerDropdown" class="form-select"></select>
+
+        <button type="button" id="refresh" class="btn btn-outline-success">⟳</button>
+        <button type="submit" id="challenge" class="btn btn-success">Challenge</button>
+    </div>
 </form>
-<h3>Challenges:</h3>
-<ul class="" id="challengeList"></ul>
+
+<h3 class="challenge-title">Challenges:</h3>
+
+<ul id="challengeList" class="challenge-list"></ul>
+
 <script id="user-data" type="application/json">
   {{{json user}}}
 </script>

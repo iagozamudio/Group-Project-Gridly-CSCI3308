@@ -19,3 +19,71 @@ footer {
     align-items: center;
     padding: 6px 0;
 }
+
+/* Container spacing */
+.challenge-form {
+    background-color: #2e2e2e;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #198754;
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+
+/* Label */
+.challenge-form .form-label {
+    color: #e0e0e0;
+    margin-bottom: 8px;
+    display: block;
+    font-weight: 500;
+}
+
+/* Dropdown */
+#playerDropdown {
+    background-color: #1f1f1f;
+    color: #e0e0e0;
+    border: 1px solid #198754;
+    border-radius: 8px;
+}
+
+/* Buttons */
+#refresh {
+    border-radius: 8px;
+}
+
+#challenge {
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* Title */
+.challenge-title {
+    color: #198754;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Challenge list */
+.challenge-list {
+    list-style: none;
+    padding: 0;
+    max-width: 400px;
+}
+
+/* Each challenge item */
+.challenge-list li {
+    background-color: #2e2e2e;
+    color: #e0e0e0;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    border-left: 4px solid #198754;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Optional hover effect */
+.challenge-list li:hover {
+    background-color: #383838;
+}
