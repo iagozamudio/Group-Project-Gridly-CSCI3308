@@ -41,7 +41,7 @@ function determineWinner(playerOneScore, playerTwoScore, playerOneTime, playerTw
 
 function calculateRating(playerRating, opponentRating, playerScore, opponentScore, didWin) {
   const scoreDiff = Math.abs(playerScore - opponentScore);
-  let delta = Math.max(10, Math.round(scoreDiff * 0.01));
+  let delta = Math.max(10, Math.round(scoreDiff * 0.05));
 
   if (didWin && playerRating < opponentRating) {
     delta += Math.round((opponentRating - playerRating) * 0.05);
