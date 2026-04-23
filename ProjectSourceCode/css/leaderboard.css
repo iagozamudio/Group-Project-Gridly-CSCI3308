@@ -1,0 +1,238 @@
+body {
+    background-color: #2e2e2e;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    min-height: 100svh;
+}
+
+a {
+    text-decoration: none;
+    color: unset;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.container.py-5 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+}
+
+.text-center.mb-5 p {
+    color: #9ca3af !important;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.card {
+    background: linear-gradient(180deg, #2a2a2a 0%, #202020 100%) !important;
+    border: 1px solid #4a4a4a !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+    color: #e0e0e0;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.nav-tabs {
+    border-bottom: 1px solid #4a4a4a !important;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.nav-tabs .nav-item {
+    margin-bottom: 0;
+}
+
+.nav-tabs .nav-link {
+    background-color: transparent;
+    border: 1px solid #4a4a4a;
+    color: #cfcfcf;
+    border-radius: 12px 12px 0 0;
+    padding: 0.8rem 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    border-color: #5a5a5a;
+}
+
+.nav-tabs .nav-link.active {
+    background: linear-gradient(135deg, #1f1f1f 0%, #2d2d2d 55%, #3a3a3a 100%);
+    color: #ffffff !important;
+    border-color: #4a4a4a #4a4a4a #202020 !important;
+}
+
+.tab-content {
+    margin-top: 1.5rem;
+}
+
+.tab-pane h5 {
+    color: #9ca3af !important;
+    font-weight: 600;
+}
+
+.tab-pane p {
+    color: #a3a3a3 !important;
+}
+
+.tab-pane p strong {
+    color: #ffffff;
+}
+
+.list-group {
+    gap: 0.75rem;
+}
+
+.list-group-item,
+.list-group > div,
+.list-group > a {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid #4a4a4a !important;
+    border-radius: 0.75rem !important;
+    color: #e0e0e0 !important;
+    margin-bottom: 0.75rem;
+    padding: 1rem 1.25rem;
+}
+
+.list-group-item:last-child,
+.list-group > div:last-child,
+.list-group > a:last-child {
+    margin-bottom: 0;
+}
+
+.list-group-item small,
+.list-group > div small,
+.list-group > a small {
+    color: #9ca3af !important;
+}
+
+.text-muted {
+    color: #9ca3af !important;
+}
+
+.text-white {
+    color: #f5f5f5 !important;
+}
+
+.logo {
+    max-width: 320px !important;
+    width: 100%;
+    height: auto;
+}
+
+#leaderboard-list:empty::before,
+#sp-time-list:empty::before,
+#tp-list:empty::before {
+    content: "Loading leaderboard...";
+    display: block;
+    text-align: center;
+    color: #9ca3af;
+    padding: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .nav-tabs .nav-link {
+        width: 100%;
+        border-radius: 12px;
+    }
+}
+
+/* === FIX: tabs in one row === */
+#leaderboardTabs {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+#leaderboardTabs .nav-item {
+    flex: 1;
+}
+
+#leaderboardTabs .nav-link {
+    width: 100%;
+    text-align: center;
+}
+
+/* === FIX: tighter list spacing === */
+.list-group {
+    gap: 0.4rem;
+}
+
+.list-group-item,
+.list-group > div,
+.list-group > a {
+    margin-bottom: 0.4rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.5rem !important;
+}
+
+/* === optional tighter text === */
+.list-group-item {
+    line-height: 1.2;
+}
+
+.list-group-item small {
+    font-size: 0.8rem;
+}
+
+/* === make all tabs equal width === */
+#leaderboardTabs {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+#leaderboardTabs .nav-item {
+    flex: 1;
+}
+
+#leaderboardTabs .nav-link {
+    width: 100%;
+    text-align: center;
+}
+
+#leaderboardTabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    width: 100% !important;
+}
+
+#leaderboardTabs .nav-item {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+#leaderboardTabs .nav-link {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    text-align: center !important;
+    white-space: normal !important;
+    min-height: 90px !important;
+}
+
+.container.py-5 .card {
+    transform: scale(1.3);
+    transform-origin: top center;
+}
+
+.tab-pane {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
